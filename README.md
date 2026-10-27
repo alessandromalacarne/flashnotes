@@ -109,6 +109,7 @@ A workflow is a rule: **when** something happens, **do** something.
 - If the API was down when a schedule was due, it catches up once on the next start, over the
   whole missed window.
 - Scheduled runs are polled every 30s (`QUICKDUMP_SCHEDULER=off` turns the poller off).
+- The whole workflows feature can be disabled with `QUICKDUMP_WORKFLOWS=off` (API routes, scheduler, triggers and the UI link). Defaults to on.
 
 ⚠️ A workflow runs a script with the API's own privileges, and the API has no authentication.
 It binds to `127.0.0.1` by default for that reason — set `HOST=0.0.0.0` only if you trust
