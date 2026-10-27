@@ -1,18 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createDump,
-  createWorkflow,
   deleteDump,
   deleteDeck,
-  deleteWorkflow,
   listDumps,
-  listScripts,
   listDecks,
-  listWorkflowRuns,
-  listWorkflows,
-  runWorkflowNow,
   updateDump,
-  updateWorkflow,
 } from './api';
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
@@ -192,159 +185,6 @@ describe('deleteDeck', () => {
     stubFetch(jsonResponse({ message: 'Deck not found' }, { status: 404 }));
 
     await expect(deleteDeck('deck-1')).rejects.toThrow('Deck not found');
-  });
-});
-
-const workflow = {
-  id: 'workflow-1',
-  name: 'notify casa',
-  enabled: true,
-  event: 'dumpCreated' as const,
-  cron: null,
-  timezone: 'America/Sao_Paulo',
-  nextRunAt: null,
-  lastRunAt: null,
-  action: 'script' as const,
-  config: { script: 'notify.sh' },
-  decks: [{ id: 'deck-1', name: 'casa' }],
-  createdAt: '2026-10-15T12:00:00.000Z',
-  updatedAt: '2026-10-15T12:00:00.000Z',
-};
-
-describe('listWorkflows', () => {
-  it('returns the workflows', async () => {
-    const fetchMock = stubFetch(jsonResponse([workflow]));
-
-    await expect(listWorkflows()).resolves.toEqual([workflow]);
-    expect(fetchMock).toHaveBeenCalledWith('/api/workflows', undefined);
-  });
-});
-
-describe('createWorkflow', () => {
-  it('posts the workflow and returns it', async () => {
-    const fetchMock = stubFetch(jsonResponse(workflow, { status: 201 }));
-    const input = {
-      name: 'notify casa',
-      event: 'dumpCreated' as const,
-      action: 'script' as const,
-      config: { script: 'notify.sh' },
-      decks: ['casa'],
-    };
-
-    await expect(createWorkflow(input)).resolves.toEqual(workflow);
-    expect(fetchMock).toHaveBeenCalledWith('/api/workflows', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-    });
-  });
-
-  it('throws the API message when the workflow is rejected', async () => {
-    stubFetch(
-      jsonResponse(
-        { message: 'cron must be a valid cron expression' },
-        { status: 400 },
-      ),
-    );
-
-    await expect(
-      createWorkflow({
-        name: 'broken',
-        cron: 'nope',
-        action: 'export',
-        config: {},
-      }),
-    ).rejects.toThrow('cron must be a valid cron expression');
-  });
-});
-
-describe('updateWorkflow', () => {
-  it('patches the workflow', async () => {
-    const fetchMock = stubFetch(jsonResponse({ ...workflow, enabled: false }));
-
-    await expect(
-      updateWorkflow('workflow-1', { enabled: false }),
-    ).resolves.toEqual({ ...workflow, enabled: false });
-    expect(fetchMock).toHaveBeenCalledWith('/api/workflows/workflow-1', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ enabled: false }),
-    });
-  });
-
-  it('encodes the workflow id into the path', async () => {
-    const fetchMock = stubFetch(jsonResponse(workflow));
-
-    await updateWorkflow('workflow/1', { name: 'renamed' });
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/workflows/workflow%2F1',
-      expect.objectContaining({ method: 'PATCH' }),
-    );
-  });
-});
-
-describe('deleteWorkflow', () => {
-  it('sends a DELETE for the workflow id', async () => {
-    const fetchMock = stubFetch(new Response(null, { status: 204 }));
-
-    await expect(deleteWorkflow('workflow-1')).resolves.toBeUndefined();
-    expect(fetchMock).toHaveBeenCalledWith('/api/workflows/workflow-1', {
-      method: 'DELETE',
-    });
-  });
-});
-
-describe('listWorkflowRuns', () => {
-  it('returns the runs of the workflow', async () => {
-    const run = {
-      id: 'run-1',
-      workflowId: 'workflow-1',
-      status: 'success' as const,
-      trigger: { kind: 'manual' },
-      exitCode: 0,
-      stdout: 'notified',
-      stderr: '',
-      error: null,
-      outputFile: null,
-      startedAt: '2026-10-15T12:30:00.000Z',
-      finishedAt: '2026-10-15T12:30:01.000Z',
-    };
-    const fetchMock = stubFetch(jsonResponse([run]));
-
-    await expect(listWorkflowRuns('workflow-1')).resolves.toEqual([run]);
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/workflows/workflow-1/runs',
-      undefined,
-    );
-  });
-});
-
-describe('runWorkflowNow', () => {
-  it('asks the API to run the workflow', async () => {
-    const fetchMock = stubFetch(
-      jsonResponse({ runId: 'run-1' }, { status: 202 }),
-    );
-
-    await expect(runWorkflowNow('workflow-1')).resolves.toEqual({
-      runId: 'run-1',
-    });
-    expect(fetchMock).toHaveBeenCalledWith('/api/workflows/workflow-1/run', {
-      method: 'POST',
-    });
-  });
-});
-
-describe('listScripts', () => {
-  it('returns the scripts found on disk', async () => {
-    const fetchMock = stubFetch(
-      jsonResponse([{ name: 'notify.sh', description: 'Notifies me' }]),
-    );
-
-    await expect(listScripts()).resolves.toEqual([
-      { name: 'notify.sh', description: 'Notifies me' },
-    ]);
-    expect(fetchMock).toHaveBeenCalledWith('/api/scripts', undefined);
   });
 });
 

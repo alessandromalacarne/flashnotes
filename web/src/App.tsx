@@ -4,8 +4,6 @@ import { createDump } from './api';
 import { Composer } from './components/Composer';
 import { DecksPage } from './pages/DecksPage';
 import { DeckDumpsPage } from './pages/DeckDumpsPage';
-import { WorkflowsPage } from './pages/WorkflowsPage';
-import { workflowsEnabled } from './feature-flags';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   isActive ? 'text-ink' : 'text-ink-faint transition-colors hover:text-ink';
@@ -17,7 +15,6 @@ function App() {
 
   const { pathname } = useLocation();
   const onDeckArea = pathname === '/decks' || pathname.startsWith('/deck/');
-  const workflowsOn = workflowsEnabled();
 
   return (
     <div className="flex h-dvh flex-col p-3 sm:p-5">
@@ -34,11 +31,6 @@ function App() {
         >
           decks
         </NavLink>
-        {workflowsOn && (
-          <NavLink to="/workflows" className={navLinkClass}>
-            workflows
-          </NavLink>
-        )}
       </nav>
 
       <main className="flex min-h-0 flex-1 flex-col">
@@ -54,9 +46,6 @@ function App() {
           />
           <Route path="/decks" element={<DecksPage />} />
           <Route path="/deck/:deck" element={<DeckDumpsPage />} />
-          {workflowsOn && (
-            <Route path="/workflows" element={<WorkflowsPage />} />
-          )}
         </Routes>
       </main>
     </div>

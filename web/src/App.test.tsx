@@ -3,13 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
-import {
-  createDump,
-  listDumps,
-  listDecks,
-  listWorkflows,
-  listScripts,
-} from './api';
+import { createDump, listDumps, listDecks } from './api';
 
 vi.mock('./api', () => ({
   createDump: vi.fn(),
@@ -18,20 +12,11 @@ vi.mock('./api', () => ({
   listDumps: vi.fn(),
   listDecks: vi.fn(),
   updateDump: vi.fn(),
-  listWorkflows: vi.fn(),
-  listScripts: vi.fn(),
-  listWorkflowRuns: vi.fn(),
-  runWorkflowNow: vi.fn(),
-  createWorkflow: vi.fn(),
-  updateWorkflow: vi.fn(),
-  deleteWorkflow: vi.fn(),
 }));
 
 const mockedCreateDump = vi.mocked(createDump);
 const mockedListDumps = vi.mocked(listDumps);
 const mockedListDecks = vi.mocked(listDecks);
-const mockedListWorkflows = vi.mocked(listWorkflows);
-const mockedListScripts = vi.mocked(listScripts);
 
 function renderApp(path = '/') {
   return render(
@@ -58,8 +43,6 @@ beforeEach(() => {
   });
   mockedListDumps.mockResolvedValue([]);
   mockedListDecks.mockResolvedValue([]);
-  mockedListWorkflows.mockResolvedValue([]);
-  mockedListScripts.mockResolvedValue([]);
 });
 
 describe('composer', () => {
@@ -228,26 +211,5 @@ describe('navigation', () => {
     expect(
       screen.getByRole('link', { name: 'dump' }).classList.contains('text-ink'),
     ).toBe(false);
-  });
-
-  it('opens the workflows page from the nav', async () => {
-    const user = userEvent.setup();
-    renderApp();
-
-    await user.click(screen.getByRole('link', { name: 'workflows' }));
-
-    expect(await screen.findByText(/no workflows yet/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'workflows' }).className).toContain(
-      'text-ink',
-    );
-    expect(screen.getByRole('link', { name: 'dump' }).className).toContain(
-      'text-ink-faint',
-    );
-  });
-
-  it('opens the workflows page straight from the URL', async () => {
-    renderApp('/workflows');
-
-    expect(await screen.findByText(/no workflows yet/i)).toBeInTheDocument();
   });
 });
