@@ -7,19 +7,6 @@ ALTER TABLE "Tag" RENAME TO "Deck";
 ALTER INDEX "Tag_name_key" RENAME TO "Deck_name_key";
 ALTER TABLE "Deck" RENAME CONSTRAINT "Tag_pkey" TO "Deck_pkey";
 
--- AlterEnum: the stored value moves with the type, so existing workflows keep
--- their trigger
-ALTER TYPE "WorkflowEvent" RENAME VALUE 'tagDeleted' TO 'deckDeleted';
-
--- RenameTable: _TagToWorkflow → _DeckToWorkflow. Prisma orders an implicit join
--- table alphabetically and "A" was already the tag side (Tag < Workflow), so the
--- sides do not move.
-ALTER TABLE "_TagToWorkflow" RENAME TO "_DeckToWorkflow";
-ALTER INDEX "_TagToWorkflow_AB_pkey" RENAME TO "_DeckToWorkflow_AB_pkey";
-ALTER INDEX "_TagToWorkflow_B_index" RENAME TO "_DeckToWorkflow_B_index";
-ALTER TABLE "_DeckToWorkflow" RENAME CONSTRAINT "_TagToWorkflow_A_fkey" TO "_DeckToWorkflow_A_fkey";
-ALTER TABLE "_DeckToWorkflow" RENAME CONSTRAINT "_TagToWorkflow_B_fkey" TO "_DeckToWorkflow_B_fkey";
-
 -- CreateTable: _DumpToTag → _DeckToDump. The alphabetical order flips (Deck <
 -- Dump), so the sides swap: "A" held the dump id and must now hold the deck id.
 -- A rename would leave every link pointing at the wrong table.

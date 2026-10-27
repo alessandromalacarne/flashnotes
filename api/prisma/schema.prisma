@@ -7,24 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum WorkflowEvent {
-  dumpCreated
-  deckDeleted
-}
-
-enum WorkflowAction {
-  script
-  export
-}
-
-enum RunStatus {
-  pending
-  running
-  success
-  failed
-  interrupted
-}
-
 model Dump {
   id        String   @id @default(uuid(7))
   content   String
@@ -33,44 +15,7 @@ model Dump {
 }
 
 model Deck {
-  id        String     @id @default(uuid(7))
-  name      String     @unique
-  dumps     Dump[]
-  workflows Workflow[]
-}
-
-model Workflow {
-  id        String          @id @default(uuid(7))
-  name      String
-  enabled   Boolean         @default(true)
-  event     WorkflowEvent?
-  cron      String?
-  timezone  String          @default("UTC")
-  nextRunAt DateTime?
-  lastRunAt DateTime?
-  action    WorkflowAction
-  config    Json
-  decks     Deck[]
-  runs      WorkflowRun[]
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-
-  @@index([enabled, nextRunAt])
-}
-
-model WorkflowRun {
-  id         String    @id @default(uuid(7))
-  workflowId String
-  workflow   Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  status     RunStatus @default(pending)
-  trigger    Json
-  exitCode   Int?
-  stdout     String?
-  stderr     String?
-  error      String?
-  outputFile String?
-  startedAt  DateTime  @default(now())
-  finishedAt DateTime?
-
-  @@index([workflowId, startedAt(sort: Desc)])
+  id    String @id @default(uuid(7))
+  name  String @unique
+  dumps Dump[]
 }
