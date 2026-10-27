@@ -1,13 +1,9 @@
-import { Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { WorkflowDispatcherService } from '../workflows/workflow-dispatcher.service.js';
 
 @Injectable()
 export class DecksService {
-  constructor(
-    private readonly prisma: PrismaService,
-    @Optional() private readonly dispatcher?: WorkflowDispatcherService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async list() {
     const decks = await this.prisma.deck.findMany({
@@ -30,13 +26,5 @@ export class DecksService {
     }
 
     await this.prisma.deck.delete({ where: { id } });
-
-    if (this.dispatcher) {
-      void this.dispatcher.dispatch({
-        kind: 'deckDeleted',
-        occurredAt: new Date().toISOString(),
-        deck: { id: deck.id, name: deck.name },
-      });
-    }
   }
 }

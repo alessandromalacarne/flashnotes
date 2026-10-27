@@ -12,15 +12,13 @@ A "dump" is a short note that ends with at least one `@deck` marker. Type it, hi
 ## Structure
 
 ```
-api/                 REST API (dumps + decks + workflows)
+api/                 REST API (dumps + decks)
   prisma/            schema and migrations
   src/dumps/         POST /dumps, GET /dumps?deck=, PATCH /dumps/:id, DELETE /dumps/:id
   src/decks/         GET /decks, DELETE /decks/:id
-  src/workflows/     rules engine: triggers, actions, scheduler, run history
   test/              e2e tests (supertest + real Postgres)
-web/                 SPA: composer, deck pages, workflows page, dark theme
+web/                 SPA: composer, deck pages, dark theme
 scripts/pg.sh        Local Postgres via nix (init/start/stop/reset)
-scripts/workflows/   scripts a workflow may run (see its README)
 compose.yaml         Postgres via Docker, alternative to pg.sh
 flake.nix            devShell (Node 24 + Postgres + Prisma engines)
 ```
@@ -76,50 +74,14 @@ cd web && npm test           # components and flows (jsdom + Testing Library)
 | DELETE | `/dumps/:id`             | Deletes a dump → 204                               |
 | GET    | `/decks`                 | Decks with counts, most used first                 |
 | DELETE | `/decks/:id`             | Deletes a deck, keeps its dumps → 204              |
-| GET    | `/workflows`             | Workflow rules with their deck scope               |
-| POST   | `/workflows`             | Creates a rule → 201                               |
-| PATCH  | `/workflows/:id`         | Edits a rule, enables/disables it                  |
-| DELETE | `/workflows/:id`         | Deletes a rule and its run history → 204           |
-| GET    | `/workflows/:id/runs`    | Run history, newest first (`?limit=`, max 100)     |
-| POST   | `/workflows/:id/run`     | Runs it right now → 202 `{ "runId": "…" }`         |
-| GET    | `/scripts`               | Scripts available to workflows, with descriptions  |
 
 Validation errors return 400. Dump without a deck: `{"message": "Include at least one @deck in the dump"}`; dump whose whole body is the marker: `{"message": "The dump needs text besides the @deck"}`. Unknown dump on PATCH/DELETE: 404 `{"message": "Dump not found"}`.
 
-## Workflows
-
-A workflow is a rule: **when** something happens, **do** something.
-
-```jsonc
-// when a dump lands on @casa, run scripts/workflows/notify.sh
-{ "name": "notify casa", "event": "dumpCreated", "decks": ["casa"],
-  "action": "script", "config": { "script": "notify.sh", "args": ["--quiet"] } }
-
-// every day at 23:59, write the day's @casa dumps to a text file
-{ "name": "daily casa export", "cron": "59 23 * * *", "timezone": "America/Sao_Paulo",
-  "decks": ["casa"], "action": "export", "config": { "window": "day" } }
-```
-
-- **Triggers** — `event` (`dumpCreated`, `deckDeleted`) or `cron` + `timezone`, never both.
-- **Deck scope** — `decks: []` means every deck. It filters the event *and* what an export covers.
-- **Actions** — `script` (a file from `scripts/workflows/`, optional `args`, `cwd`, `timeoutMs`)
-  or `export` (a plain text file of the window's dumps, `window` being `sinceLastRun`, `day` or `all`).
-- Reports are kept per run: status, exit code, `stdout`, `stderr` and the file written.
-- A failed workflow never fails the request that triggered it — the dump is saved either way.
-- If the API was down when a schedule was due, it catches up once on the next start, over the
-  whole missed window.
-- Scheduled runs are polled every 30s (`QUICKDUMP_SCHEDULER=off` turns the poller off).
-- The whole workflows feature can be disabled with `QUICKDUMP_WORKFLOWS=off` (API routes, scheduler, triggers and the UI link). Defaults to on.
-
-⚠️ A workflow runs a script with the API's own privileges, and the API has no authentication.
-It binds to `127.0.0.1` by default for that reason — set `HOST=0.0.0.0` only if you trust
-everything that can reach the port. See `scripts/workflows/README.md` for the script contract.
-
 ## Notes
 
-- Decks come from the trailing markers (`@home` → `home`), lowercased, no duplicates. Only markers at the end of the dump count: `buy coffee @casa @trabalho` links both decks, while `@casa buy coffee` and `buy coffee @casa now` have no deck at all. The markers are stripped from the body before it is saved, so a dump stores plain text and its decks as a relation. A deck whose last dump is edited away or deleted is removed from `/decks`, and a workflow watching that deck hears about it like any other deletion.
+- Decks come from the trailing markers (`@home` → `home`), lowercased, no duplicates. Only markers at the end of the dump count: `buy coffee @casa @trabalho` links both decks, while `@casa buy coffee` and `buy coffee @casa now` have no deck at all. The markers are stripped from the body before it is saved, so a dump stores plain text and its decks as a relation. A deck whose last dump is edited away or deleted is removed from `/decks`.
 - Only a marker at the end links a deck: `#casa`, `foo@bar.com` and a marker followed by punctuation are plain text.
-- Web UI: dark theme, composer (Enter sends, Shift+Enter breaks the line, clicking anywhere focuses the field), deck pages and a workflows page to create rules and read their runs.
+- Web UI: dark theme, composer (Enter sends, Shift+Enter breaks the line, clicking anywhere focuses the field) and deck pages.
 - `/deck/:deck` lists the dumps of a deck with an empty composer (type the trailing marker yourself), inline editing and delete behind a `confirm?` step.
 - Export files render each dump's decks in the header (`@casa`), because the body no longer carries them.
 - Single-user: no authentication in this version.

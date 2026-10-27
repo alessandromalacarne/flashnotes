@@ -1,3 +1,3 @@
 #!/bin/sh
-# Prints the dump that triggered the workflow.
+# Prints a greeting.
 echo "hello from $(basename "$0")"
