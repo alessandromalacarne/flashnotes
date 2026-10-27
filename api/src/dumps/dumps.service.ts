@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { WorkflowDispatcherService } from '../workflows/workflow-dispatcher.service.js';
@@ -18,7 +19,7 @@ interface ParsedDump {
 export class DumpsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly dispatcher: WorkflowDispatcherService,
+    @Optional() private readonly dispatcher?: WorkflowDispatcherService,
   ) {}
 
   async create(dto: CreateDumpDto) {
@@ -37,15 +38,17 @@ export class DumpsService {
       include: { decks: true },
     });
 
-    void this.dispatcher.dispatch({
-      kind: 'dumpCreated',
-      occurredAt: new Date().toISOString(),
-      dump: {
-        id: dump.id,
-        content: dump.content,
-        deckNames: dump.decks.map((deck) => deck.name),
-      },
-    });
+    if (this.dispatcher) {
+      void this.dispatcher.dispatch({
+        kind: 'dumpCreated',
+        occurredAt: new Date().toISOString(),
+        dump: {
+          id: dump.id,
+          content: dump.content,
+          deckNames: dump.decks.map((deck) => deck.name),
+        },
+      });
+    }
 
     return dump;
   }
@@ -122,6 +125,7 @@ export class DumpsService {
   // A deck that loses its last dump is gone exactly like a deleted one, so the
   // workflows watching it hear about it the same way.
   private dispatchDeckDeletions(decks: { id: string; name: string }[]): void {
+    if (!this.dispatcher) return;
     for (const deck of decks) {
       void this.dispatcher.dispatch({
         kind: 'deckDeleted',
