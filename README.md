@@ -8,16 +8,20 @@ A "dump" is a short note that ends with at least one `@deck` marker. Type it, hi
 
 - **api/** — NestJS 12 + Prisma 7 + PostgreSQL, TypeScript ESM
 - **web/** — React 19 + Vite 8 + Tailwind CSS 4, TypeScript
+- **auth** — cookie sessions via `@nestjs/authentication` (sign-up, sign-in, sign-out)
 
 ## Structure
 
 ```
-api/                 REST API (dumps + decks)
+api/                 REST API (auth + dumps + decks)
   prisma/            schema and migrations
+  src/auth/          POST /auth/sign-up, POST /auth/sign-in, GET /auth/me, POST /auth/sign-out
+  src/users/         user repository and Prisma-backed credentials
   src/dumps/         POST /dumps, GET /dumps?deck=, PATCH /dumps/:id, DELETE /dumps/:id
   src/decks/         GET /decks, DELETE /decks/:id
-  test/              e2e tests (supertest + real Postgres)
-web/                 SPA: composer, deck pages, dark theme
+  test/              e2e tests (supertest + real Postgres, signed-in agent)
+web/                 SPA: landing, login/signup, composer and deck pages
+  src/auth/          session context, route guards
 scripts/pg.sh        Local Postgres via nix (init/start/stop/reset)
 compose.yaml         Postgres via Docker, alternative to pg.sh
 flake.nix            devShell (Node 24 + Postgres + Prisma engines)
@@ -53,12 +57,25 @@ npm install
 npm run dev                  # app at http://localhost:5173
 ```
 
-Vite proxies `/api` to `localhost:3000`.
+Vite proxies `/api` to `127.0.0.1:3000`.
+
+## Routes
+
+| Route               | Description                                              |
+| ------------------- | -------------------------------------------------------- |
+| `/`                 | Public landing page                                      |
+| `/login`            | Sign in                                                  |
+| `/signup`           | Create an account (password: 12–128 characters)          |
+| `/app`              | Composer, requires a session                             |
+| `/app/decks`        | Decks, requires a session                                |
+| `/app/deck/:deck`   | Dumps of a deck, requires a session                      |
+
+Anonymous visits to `/app/**` redirect to `/login`; signing in returns to the requested page.
 
 ## Tests
 
 ```bash
-cd api && npm test           # unit (deck parser, triggers, cron, export format, scripts)
+cd api && npm test           # unit (deck parser)
 cd api && npm run test:e2e   # e2e with real Postgres (uses quickdump_test)
 cd web && npm test           # components and flows (jsdom + Testing Library)
 ```
@@ -67,6 +84,10 @@ cd web && npm test           # components and flows (jsdom + Testing Library)
 
 | Method | Route                    | Description                                        |
 | ------ | ------------------------ | -------------------------------------------------- |
+| POST   | `/auth/sign-up`          | Creates an account, signs in and returns the user  |
+| POST   | `/auth/sign-in`          | `{ "email", "password" }` → 200 `{ "user", "mfaRequired": false }` |
+| GET    | `/auth/me`               | The signed-in user, or `{ "user": null }`          |
+| POST   | `/auth/sign-out`         | Ends the session → 204                             |
 | POST   | `/dumps`                 | Creates a dump. `{ "content": "buy coffee @casa" }` → 201 `content: "buy coffee"` |
 | GET    | `/dumps`                 | Lists dumps, newest first                          |
 | GET    | `/dumps?deck=home`       | Filters by deck (case-insensitive)                 |
@@ -75,15 +96,18 @@ cd web && npm test           # components and flows (jsdom + Testing Library)
 | GET    | `/decks`                 | Decks with counts, most used first                 |
 | DELETE | `/decks/:id`             | Deletes a deck, keeps its dumps → 204              |
 
+Every route except the four `/auth` ones requires a live session cookie; without it the API answers 401. Sign-up rejects a duplicate email with 409 and invalid payloads with 400; sign-in rejects bad credentials with 401 `Invalid email or password`.
+
 Validation errors return 400. Dump without a deck: `{"message": "Include at least one @deck in the dump"}`; dump whose whole body is the marker: `{"message": "The dump needs text besides the @deck"}`. Unknown dump on PATCH/DELETE: 404 `{"message": "Dump not found"}`.
 
 ## Notes
 
 - Decks come from the trailing markers (`@home` → `home`), lowercased, no duplicates. Only markers at the end of the dump count: `buy coffee @casa @trabalho` links both decks, while `@casa buy coffee` and `buy coffee @casa now` have no deck at all. The markers are stripped from the body before it is saved, so a dump stores plain text and its decks as a relation. A deck whose last dump is edited away or deleted is removed from `/decks`.
 - Only a marker at the end links a deck: `#casa`, `foo@bar.com` and a marker followed by punctuation are plain text.
-- Web UI: dark theme, composer (Enter sends, Shift+Enter breaks the line, clicking anywhere focuses the field) and deck pages.
-- `/deck/:deck` lists the dumps of a deck with an empty composer (type the trailing marker yourself), inline editing and delete behind a `confirm?` step.
+- Web UI: dark theme, public landing page, login/signup, composer (Enter sends, Shift+Enter breaks the line, clicking anywhere focuses the field) and deck pages.
+- `/app/deck/:deck` lists the dumps of a deck with an empty composer (type the trailing marker yourself), inline editing and delete behind a `confirm?` step.
 - Export files render each dump's decks in the header (`@casa`), because the body no longer carries them.
-- Single-user: no authentication in this version.
+- Accounts use server-side cookie sessions (`HttpOnly`, `SameSite=Lax`): 3-day idle timeout, 14-day absolute lifetime. The cookie is `Secure` and uses the `__Host-` prefix when `NODE_ENV=production`; development uses a plain `sid` cookie so the Vite proxy on `http://localhost` works.
+- Sessions and password hashing are owned by `@nestjs/authentication`; the session store is in-memory for now, so a restart signs everyone out.
 - Prisma commands load `api/.env` automatically (values already in the environment win), so `npm run prisma:generate` and `npm run db:migrate` work on any OS.
 - On NixOS, Prisma cannot download its engines. The `flake.nix` devShell exports `PRISMA_SCHEMA_ENGINE_BINARY`, so run Prisma commands inside `nix develop`.
