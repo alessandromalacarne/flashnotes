@@ -3,6 +3,11 @@ export interface Deck {
   name: string;
 }
 
+export interface User {
+  id: string;
+  email: string;
+}
+
 export interface DeckWithCount extends Deck {
   count: number;
 }
@@ -70,4 +75,37 @@ export async function listDecks(): Promise<DeckWithCount[]> {
 
 export async function deleteDeck(id: string): Promise<void> {
   await request(`/api/decks/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  const response = await fetch('/api/auth/me');
+  if (!response.ok) {
+    return null;
+  }
+
+  const body = (await response.json()) as { user: User | null };
+  return body.user;
+}
+
+export async function signIn(email: string, password: string): Promise<User> {
+  const response = await request('/api/auth/sign-in', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const body = (await response.json()) as { user: User };
+  return body.user;
+}
+
+export async function signUp(email: string, password: string): Promise<User> {
+  const response = await request('/api/auth/sign-up', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  return (await response.json()) as User;
+}
+
+export async function signOut(): Promise<void> {
+  await request('/api/auth/sign-out', { method: 'POST' });
 }

@@ -10,6 +10,7 @@ export default defineConfig({
     globalSetup: ['./test/global-setup.e2e.ts'],
     fileParallelism: false,
     env: {
+      NODE_ENV: 'test',
       DATABASE_URL:
         process.env.TEST_DATABASE_URL ??
         'postgresql://postgres:postgres@localhost:5432/quickdump_test',

@@ -19,7 +19,7 @@ describe('DeckCard', () => {
 
     expect(screen.getByRole('link', { name: /@casa/ })).toHaveAttribute(
       'href',
-      '/deck/casa',
+      '/app/deck/casa',
     );
   });
 
@@ -28,7 +28,7 @@ describe('DeckCard', () => {
 
     expect(screen.getByRole('link', { name: /@café/ })).toHaveAttribute(
       'href',
-      '/deck/caf%C3%A9',
+      '/app/deck/caf%C3%A9',
     );
   });
 });

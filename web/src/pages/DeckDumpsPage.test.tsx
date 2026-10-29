@@ -112,7 +112,7 @@ describe('DeckDumpsPage states', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /dump/i })).toHaveAttribute(
       'href',
-      '/',
+      '/app',
     );
   });
 });

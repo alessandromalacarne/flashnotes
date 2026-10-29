@@ -34,7 +34,7 @@ export function DeckCard({ deck, onDelete }: DeckCardProps) {
       className="group flex w-40 flex-col items-center justify-self-center gap-3 rounded-2xl border border-transparent p-4 transition-colors hover:bg-surface-raised focus-within:bg-surface-raised"
     >
       <Link
-        to={`/deck/${encodeURIComponent(deck.name)}`}
+        to={`/app/deck/${encodeURIComponent(deck.name)}`}
         className="flex flex-col items-center gap-3 rounded-xl"
       >
         <p className="flex flex-col items-center">

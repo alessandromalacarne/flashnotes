@@ -121,7 +121,10 @@ export function DeckDumpsPage() {
       ) : dumps.length === 0 ? (
         <p className="mt-4 text-sm text-ink-soft">
           No dumps with @{deck} yet.{' '}
-          <Link to="/" className="text-mark underline-offset-4 hover:underline">
+          <Link
+            to="/app"
+            className="text-mark underline-offset-4 hover:underline"
+          >
             write a dump
           </Link>{' '}
           to add the first one.

@@ -1,54 +1,51 @@
-import { useCallback } from 'react';
-import { NavLink, Route, Routes, useLocation } from 'react-router';
-import { createDump } from './api';
-import { Composer } from './components/Composer';
-import { DecksPage } from './pages/DecksPage';
+import { Navigate, Route, Routes } from 'react-router';
+import { AuthProvider } from './auth/AuthProvider';
+import { PublicOnly } from './auth/PublicOnly';
+import { RequireAuth } from './auth/RequireAuth';
+import { AppShell } from './components/AppShell';
 import { DeckDumpsPage } from './pages/DeckDumpsPage';
-
-const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  isActive ? 'text-ink' : 'text-ink-faint transition-colors hover:text-ink';
+import { DecksPage } from './pages/DecksPage';
+import { DumpPage } from './pages/DumpPage';
+import { LandingPage } from './pages/LandingPage';
+import { LoginPage } from './pages/LoginPage';
+import { SignUpPage } from './pages/SignUpPage';
 
 function App() {
-  const handleSubmit = useCallback(async (content: string) => {
-    await createDump(content);
-  }, []);
-
-  const { pathname } = useLocation();
-  const onDeckArea = pathname === '/decks' || pathname.startsWith('/deck/');
-
   return (
-    <div className="flex h-dvh flex-col p-3 sm:p-5">
-      <nav
-        aria-label="Main"
-        className="flex shrink-0 items-center justify-end gap-4 pb-2 text-sm"
-      >
-        <NavLink to="/" end className={navLinkClass}>
-          dump
-        </NavLink>
-        <NavLink
-          to="/decks"
-          className={() => navLinkClass({ isActive: onDeckArea })}
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/login"
+          element={
+            <PublicOnly>
+              <LoginPage />
+            </PublicOnly>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PublicOnly>
+              <SignUpPage />
+            </PublicOnly>
+          }
+        />
+        <Route
+          path="/app"
+          element={
+            <RequireAuth>
+              <AppShell />
+            </RequireAuth>
+          }
         >
-          decks
-        </NavLink>
-      </nav>
-
-      <main className="flex min-h-0 flex-1 flex-col">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <h1 className="sr-only">quickdump</h1>
-                <Composer onSubmit={handleSubmit} />
-              </>
-            }
-          />
-          <Route path="/decks" element={<DecksPage />} />
-          <Route path="/deck/:deck" element={<DeckDumpsPage />} />
-        </Routes>
-      </main>
-    </div>
+          <Route index element={<DumpPage />} />
+          <Route path="decks" element={<DecksPage />} />
+          <Route path="deck/:deck" element={<DeckDumpsPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AuthProvider>
   );
 }
 

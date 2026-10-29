@@ -60,7 +60,7 @@ describe('DecksPage', () => {
     expect(await screen.findByText(/no decks yet/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /dump/i })).toHaveAttribute(
       'href',
-      '/',
+      '/app',
     );
   });
 });
