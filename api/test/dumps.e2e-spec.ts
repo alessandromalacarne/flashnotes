@@ -1,10 +1,11 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { PrismaService } from '../src/prisma/prisma.service.js';
-import { createTestApp, truncateAll } from './test-app.js';
+import { createTestApp, signedInAgent, truncateAll } from './test-app.js';
 
 let app: INestApplication;
 let prisma: PrismaService;
+let agent: ReturnType<typeof request.agent>;
 
 beforeAll(async () => {
   ({ app, prisma } = await createTestApp());
@@ -12,6 +13,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await truncateAll(prisma);
+  agent = await signedInAgent(app);
 });
 
 afterAll(async () => {
@@ -20,7 +22,7 @@ afterAll(async () => {
 
 describe('creating a dump', () => {
   it('stores the body without the deck marker and links the deck', async () => {
-    const response = await request(app.getHttpServer())
+    const response = await agent
       .post('/dumps')
       .send({ content: 'buy coffee @casa' })
       .expect(201);
@@ -34,12 +36,12 @@ describe('creating a dump', () => {
   });
 
   it('reuses the existing deck instead of duplicating it', async () => {
-    const first = await request(app.getHttpServer())
+    const first = await agent
       .post('/dumps')
       .send({ content: 'buy coffee @Casa' })
       .expect(201);
 
-    const second = await request(app.getHttpServer())
+    const second = await agent
       .post('/dumps')
       .send({ content: 'clean kitchen @casa' })
       .expect(201);
@@ -55,7 +57,7 @@ describe('creating a dump', () => {
 
 describe('rejecting an invalid dump', () => {
   it('rejects a dump without any deck', async () => {
-    const response = await request(app.getHttpServer())
+    const response = await agent
       .post('/dumps')
       .send({ content: 'text without a deck' })
       .expect(400);
@@ -67,10 +69,7 @@ describe('rejecting an invalid dump', () => {
 
   it('rejects a marker that is not at the end', async () => {
     for (const content of ['@casa buy coffee', 'buy coffee @casa now']) {
-      const response = await request(app.getHttpServer())
-        .post('/dumps')
-        .send({ content })
-        .expect(400);
+      const response = await agent.post('/dumps').send({ content }).expect(400);
 
       expect(response.body.message).toBe(
         'Include at least one @deck in the dump',
@@ -79,7 +78,7 @@ describe('rejecting an invalid dump', () => {
   });
 
   it('rejects a dump whose whole body is the marker', async () => {
-    const response = await request(app.getHttpServer())
+    const response = await agent
       .post('/dumps')
       .send({ content: '  @casa @trabalho  ' })
       .expect(400);
@@ -88,33 +87,19 @@ describe('rejecting an invalid dump', () => {
   });
 
   it('rejects empty or blank content', async () => {
-    await request(app.getHttpServer())
-      .post('/dumps')
-      .send({ content: '' })
-      .expect(400);
+    await agent.post('/dumps').send({ content: '' }).expect(400);
 
-    await request(app.getHttpServer())
-      .post('/dumps')
-      .send({ content: '   ' })
-      .expect(400);
+    await agent.post('/dumps').send({ content: '   ' }).expect(400);
   });
 });
 
 describe('listing dumps', () => {
   it('lists dumps newest first', async () => {
-    await request(app.getHttpServer())
-      .post('/dumps')
-      .send({ content: 'first @casa' })
-      .expect(201);
+    await agent.post('/dumps').send({ content: 'first @casa' }).expect(201);
 
-    await request(app.getHttpServer())
-      .post('/dumps')
-      .send({ content: 'second @casa' })
-      .expect(201);
+    await agent.post('/dumps').send({ content: 'second @casa' }).expect(201);
 
-    const response = await request(app.getHttpServer())
-      .get('/dumps')
-      .expect(200);
+    const response = await agent.get('/dumps').expect(200);
 
     expect(
       response.body.map((dump: { content: string }) => dump.content),
@@ -125,22 +110,17 @@ describe('listing dumps', () => {
   });
 
   it('filters dumps by deck, ignoring case', async () => {
-    await request(app.getHttpServer())
-      .post('/dumps')
-      .send({ content: 'home item @casa' })
-      .expect(201);
-    await request(app.getHttpServer())
+    await agent.post('/dumps').send({ content: 'home item @casa' }).expect(201);
+    await agent
       .post('/dumps')
       .send({ content: 'work item @trabalho' })
       .expect(201);
-    await request(app.getHttpServer())
+    await agent
       .post('/dumps')
       .send({ content: 'another item @Casa' })
       .expect(201);
 
-    const response = await request(app.getHttpServer())
-      .get('/dumps?deck=Casa')
-      .expect(200);
+    const response = await agent.get('/dumps?deck=Casa').expect(200);
 
     expect(
       response.body.map((dump: { content: string }) => dump.content),
@@ -150,12 +130,12 @@ describe('listing dumps', () => {
 
 describe('updating a dump', () => {
   it('updates the body, strips new markers and keeps the creation date', async () => {
-    const created = await request(app.getHttpServer())
+    const created = await agent
       .post('/dumps')
       .send({ content: 'buy coffee @casa' })
       .expect(201);
 
-    const response = await request(app.getHttpServer())
+    const response = await agent
       .patch(`/dumps/${created.body.id}`)
       .send({ content: 'buy tea @casa' })
       .expect(200);
@@ -171,12 +151,12 @@ describe('updating a dump', () => {
   });
 
   it('replaces the decks that are no longer in the body', async () => {
-    const created = await request(app.getHttpServer())
+    const created = await agent
       .post('/dumps')
       .send({ content: 'buy coffee @casa @trabalho' })
       .expect(201);
 
-    const response = await request(app.getHttpServer())
+    const response = await agent
       .patch(`/dumps/${created.body.id}`)
       .send({ content: 'buy coffee @trabalho' })
       .expect(200);
@@ -185,7 +165,7 @@ describe('updating a dump', () => {
       { id: expect.any(String), name: 'trabalho' },
     ]);
 
-    const decks = await request(app.getHttpServer()).get('/decks').expect(200);
+    const decks = await agent.get('/decks').expect(200);
 
     expect(decks.body).toEqual([
       { id: expect.any(String), name: 'trabalho', count: 1 },
@@ -193,12 +173,12 @@ describe('updating a dump', () => {
   });
 
   it('connects the decks added to the body', async () => {
-    const created = await request(app.getHttpServer())
+    const created = await agent
       .post('/dumps')
       .send({ content: 'buy coffee @casa' })
       .expect(201);
 
-    const response = await request(app.getHttpServer())
+    const response = await agent
       .patch(`/dumps/${created.body.id}`)
       .send({ content: 'buy coffee @casa @urgente' })
       .expect(200);
@@ -207,7 +187,7 @@ describe('updating a dump', () => {
       response.body.decks.map((deck: { name: string }) => deck.name).sort(),
     ).toEqual(['casa', 'urgente']);
 
-    const decks = await request(app.getHttpServer()).get('/decks').expect(200);
+    const decks = await agent.get('/decks').expect(200);
 
     expect(decks.body).toEqual([
       { id: expect.any(String), name: 'casa', count: 1 },
