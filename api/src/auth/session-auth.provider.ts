@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
+
 import {
   AuthenticationRegistry,
   SessionCookieProvider,
   type SessionRecord,
 } from '@nestjs/authentication';
+
 import type { User } from '../users/user.js';
 import { UsersRepository } from '../users/users.repository.js';
 
