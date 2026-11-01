@@ -26,7 +26,7 @@ function NotePreview() {
         call the dentist
         <br />
         <span className="text-ink-soft">buy coffee</span>
-        <span className="text-mark"> @casa @errands</span>
+        <span className="text-mark"> @home @errands</span>
       </p>
 
       <div className="mt-6 flex items-center gap-2 border-t border-line pt-4 text-sm text-ink-faint">
@@ -106,8 +106,8 @@ function FeatureGrid() {
         is out of your head.
       </FeatureCard>
       <FeatureCard title="Groups, not folders">
-        End a note with @casa or @trabalho. One thought can land in more than
-        one group at once.
+        End a note with @home or @work. One thought can land in more than one
+        group at once.
       </FeatureCard>
       <FeatureCard title="Plain text that lasts">
         Bodies are stored without the markers. Export a group when you are ready
