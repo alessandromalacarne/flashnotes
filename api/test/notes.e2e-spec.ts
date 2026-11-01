@@ -24,12 +24,12 @@ describe('creating a dump', () => {
   it('stores the body without the deck marker and links the deck', async () => {
     const response = await agent
       .post('/notes')
-      .send({ content: 'buy coffee @casa' })
+      .send({ content: 'buy coffee @home' })
       .expect(201);
 
     expect(response.body).toMatchObject({
       content: 'buy coffee',
-      groups: [{ name: 'casa' }],
+      groups: [{ name: 'home' }],
     });
     expect(response.body.id).toEqual(expect.any(String));
     expect(response.body.createdAt).toEqual(expect.any(String));
@@ -38,19 +38,19 @@ describe('creating a dump', () => {
   it('reuses the existing deck instead of duplicating it', async () => {
     const first = await agent
       .post('/notes')
-      .send({ content: 'buy coffee @Casa' })
+      .send({ content: 'buy coffee @Home' })
       .expect(201);
 
     const second = await agent
       .post('/notes')
-      .send({ content: 'clean kitchen @casa' })
+      .send({ content: 'clean kitchen @home' })
       .expect(201);
 
     expect(first.body.groups).toEqual([
-      { id: expect.any(String), name: 'casa' },
+      { id: expect.any(String), name: 'home' },
     ]);
     expect(second.body.groups).toEqual([
-      { id: first.body.groups[0].id, name: 'casa' },
+      { id: first.body.groups[0].id, name: 'home' },
     ]);
   });
 });
@@ -68,7 +68,7 @@ describe('rejecting an invalid dump', () => {
   });
 
   it('rejects a marker that is not at the end', async () => {
-    for (const content of ['@casa buy coffee', 'buy coffee @casa now']) {
+    for (const content of ['@home buy coffee', 'buy coffee @home now']) {
       const response = await agent.post('/notes').send({ content }).expect(400);
 
       expect(response.body.message).toBe(
@@ -80,7 +80,7 @@ describe('rejecting an invalid dump', () => {
   it('rejects a dump whose whole body is the marker', async () => {
     const response = await agent
       .post('/notes')
-      .send({ content: '  @casa @trabalho  ' })
+      .send({ content: '  @home @work  ' })
       .expect(400);
 
     expect(response.body.message).toBe(
@@ -97,9 +97,9 @@ describe('rejecting an invalid dump', () => {
 
 describe('listing dumps', () => {
   it('lists dumps newest first', async () => {
-    await agent.post('/notes').send({ content: 'first @casa' }).expect(201);
+    await agent.post('/notes').send({ content: 'first @home' }).expect(201);
 
-    await agent.post('/notes').send({ content: 'second @casa' }).expect(201);
+    await agent.post('/notes').send({ content: 'second @home' }).expect(201);
 
     const response = await agent.get('/notes').expect(200);
 
@@ -107,22 +107,19 @@ describe('listing dumps', () => {
       response.body.map((note: { content: string }) => note.content),
     ).toEqual(['second', 'first']);
     expect(response.body[0].groups).toEqual([
-      { id: expect.any(String), name: 'casa' },
+      { id: expect.any(String), name: 'home' },
     ]);
   });
 
   it('filters dumps by deck, ignoring case', async () => {
-    await agent.post('/notes').send({ content: 'home item @casa' }).expect(201);
+    await agent.post('/notes').send({ content: 'home item @home' }).expect(201);
+    await agent.post('/notes').send({ content: 'work item @work' }).expect(201);
     await agent
       .post('/notes')
-      .send({ content: 'work item @trabalho' })
-      .expect(201);
-    await agent
-      .post('/notes')
-      .send({ content: 'another item @Casa' })
+      .send({ content: 'another item @Home' })
       .expect(201);
 
-    const response = await agent.get('/notes?group=Casa').expect(200);
+    const response = await agent.get('/notes?group=Home').expect(200);
 
     expect(
       response.body.map((note: { content: string }) => note.content),
@@ -134,12 +131,12 @@ describe('updating a dump', () => {
   it('updates the body, strips new markers and keeps the creation date', async () => {
     const created = await agent
       .post('/notes')
-      .send({ content: 'buy coffee @casa' })
+      .send({ content: 'buy coffee @home' })
       .expect(201);
 
     const response = await agent
       .patch(`/notes/${created.body.id}`)
-      .send({ content: 'buy tea @casa' })
+      .send({ content: 'buy tea @home' })
       .expect(200);
 
     expect(response.body).toMatchObject({
@@ -148,52 +145,52 @@ describe('updating a dump', () => {
       createdAt: created.body.createdAt,
     });
     expect(response.body.groups).toEqual([
-      { id: created.body.groups[0].id, name: 'casa' },
+      { id: created.body.groups[0].id, name: 'home' },
     ]);
   });
 
   it('replaces the decks that are no longer in the body', async () => {
     const created = await agent
       .post('/notes')
-      .send({ content: 'buy coffee @casa @trabalho' })
+      .send({ content: 'buy coffee @home @work' })
       .expect(201);
 
     const response = await agent
       .patch(`/notes/${created.body.id}`)
-      .send({ content: 'buy coffee @trabalho' })
+      .send({ content: 'buy coffee @work' })
       .expect(200);
 
     expect(response.body.groups).toEqual([
-      { id: expect.any(String), name: 'trabalho' },
+      { id: expect.any(String), name: 'work' },
     ]);
 
     const decks = await agent.get('/groups').expect(200);
 
     expect(decks.body).toEqual([
-      { id: expect.any(String), name: 'trabalho', count: 1 },
+      { id: expect.any(String), name: 'work', count: 1 },
     ]);
   });
 
   it('connects the decks added to the body', async () => {
     const created = await agent
       .post('/notes')
-      .send({ content: 'buy coffee @casa' })
+      .send({ content: 'buy coffee @home' })
       .expect(201);
 
     const response = await agent
       .patch(`/notes/${created.body.id}`)
-      .send({ content: 'buy coffee @casa @urgente' })
+      .send({ content: 'buy coffee @home @urgent' })
       .expect(200);
 
     expect(
       response.body.groups.map((deck: { name: string }) => deck.name).sort(),
-    ).toEqual(['casa', 'urgente']);
+    ).toEqual(['home', 'urgent']);
 
     const decks = await agent.get('/groups').expect(200);
 
     expect(decks.body).toEqual([
-      { id: expect.any(String), name: 'casa', count: 1 },
-      { id: expect.any(String), name: 'urgente', count: 1 },
+      { id: expect.any(String), name: 'home', count: 1 },
+      { id: expect.any(String), name: 'urgent', count: 1 },
     ]);
   });
 });

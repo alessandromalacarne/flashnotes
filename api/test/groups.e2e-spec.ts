@@ -22,17 +22,17 @@ afterAll(async () => {
 
 describe('listing decks', () => {
   it('lists decks with counts, most used first and tie-broken by name', async () => {
-    await agent.post('/notes').send({ content: 'first @casa' }).expect(201);
-    await agent.post('/notes').send({ content: 'second @casa' }).expect(201);
-    await agent.post('/notes').send({ content: 'third @trabalho' }).expect(201);
+    await agent.post('/notes').send({ content: 'first @home' }).expect(201);
+    await agent.post('/notes').send({ content: 'second @home' }).expect(201);
+    await agent.post('/notes').send({ content: 'third @work' }).expect(201);
     await agent.post('/notes').send({ content: 'fourth @aaa' }).expect(201);
 
     const response = await agent.get('/groups').expect(200);
 
     expect(response.body).toEqual([
-      { id: expect.any(String), name: 'casa', count: 2 },
+      { id: expect.any(String), name: 'home', count: 2 },
       { id: expect.any(String), name: 'aaa', count: 1 },
-      { id: expect.any(String), name: 'trabalho', count: 1 },
+      { id: expect.any(String), name: 'work', count: 1 },
     ]);
   });
 
@@ -47,24 +47,24 @@ describe('deleting decks', () => {
   it('deletes a deck without deleting its dumps', async () => {
     await agent
       .post('/notes')
-      .send({ content: 'buy coffee @casa' })
+      .send({ content: 'buy coffee @home' })
       .expect(201);
     await agent
       .post('/notes')
-      .send({ content: 'write the report @trabalho' })
+      .send({ content: 'write the report @work' })
       .expect(201);
 
     const decks = await agent.get('/groups').expect(200);
-    const casa = decks.body.find(
-      (deck: { name: string }) => deck.name === 'casa',
+    const home = decks.body.find(
+      (deck: { name: string }) => deck.name === 'home',
     );
 
-    await agent.delete(`/groups/${casa.id}`).expect(204);
+    await agent.delete(`/groups/${home.id}`).expect(204);
 
     const remainingDecks = await agent.get('/groups').expect(200);
     expect(
       remainingDecks.body.map((deck: { name: string }) => deck.name),
-    ).toEqual(['trabalho']);
+    ).toEqual(['work']);
 
     const dumps = await agent.get('/notes').expect(200);
     expect(dumps.body.map((note: { content: string }) => note.content)).toEqual(

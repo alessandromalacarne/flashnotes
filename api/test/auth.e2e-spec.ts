@@ -130,7 +130,7 @@ describe('protecting the app routes', () => {
 
     await agent
       .post('/notes')
-      .send({ content: 'buy coffee @casa' })
+      .send({ content: 'buy coffee @home' })
       .expect(201);
   });
 });

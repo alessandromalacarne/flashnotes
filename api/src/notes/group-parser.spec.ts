@@ -2,36 +2,33 @@ import { extractGroups, stripGroups } from './group-parser.js';
 
 describe('extractGroups', () => {
   it('collects names lowercased and deduplicated', () => {
-    expect(extractGroups('comprar café @casa @Casa @casa-trabalho')).toEqual([
-      'casa',
-      'casa-trabalho',
+    expect(extractGroups('buy coffee @home @Home @home-work')).toEqual([
+      'home',
+      'home-work',
     ]);
   });
 
   it('accepts accents, digits, hyphens and underscores', () => {
-    expect(extractGroups('anotar @café @42 @casa-grande @bem_vindo')).toEqual([
-      'café',
-      '42',
-      'casa-grande',
-      'bem_vindo',
-    ]);
+    expect(
+      extractGroups('remember @café @42 @big-house @welcome_here'),
+    ).toEqual(['café', '42', 'big-house', 'welcome_here']);
   });
 
   it('ignores a marker at the start of the dump', () => {
-    expect(extractGroups('@casa varrer o chão')).toEqual([]);
+    expect(extractGroups('@home sweep the floor')).toEqual([]);
   });
 
   it('ignores a marker in the middle of the dump', () => {
-    expect(extractGroups('varrer @casa o chão')).toEqual([]);
+    expect(extractGroups('sweep @home the floor')).toEqual([]);
   });
 
   it('finds markers on the last line', () => {
-    expect(extractGroups('linha um\nlinha dois @casa')).toEqual(['casa']);
-    expect(extractGroups('linha um\n@casa')).toEqual(['casa']);
+    expect(extractGroups('line one\nline two @home')).toEqual(['home']);
+    expect(extractGroups('line one\n@home')).toEqual(['home']);
   });
 
   it('ignores a marker followed by punctuation', () => {
-    expect(extractGroups('list @casa, then @trabalho.')).toEqual([]);
+    expect(extractGroups('list @home, then @work.')).toEqual([]);
   });
 
   it('ignores an @ glued to a word', () => {
@@ -43,7 +40,7 @@ describe('extractGroups', () => {
   });
 
   it('no longer treats # as a marker', () => {
-    expect(extractGroups('porta #casa plain text')).toEqual([]);
+    expect(extractGroups('door #home plain text')).toEqual([]);
   });
 
   it('returns an empty list for text without a marker', () => {
@@ -53,57 +50,57 @@ describe('extractGroups', () => {
 
 describe('stripGroups', () => {
   it('removes a trailing marker and the space that carried it', () => {
-    expect(stripGroups('comprar café @casa')).toBe('comprar café');
+    expect(stripGroups('buy coffee @home')).toBe('buy coffee');
   });
 
   it('removes every trailing marker', () => {
-    expect(stripGroups('comprar café @casa @trabalho')).toBe('comprar café');
-    expect(stripGroups('comprar café\n@casa\n@trabalho')).toBe('comprar café');
+    expect(stripGroups('buy coffee @home @work')).toBe('buy coffee');
+    expect(stripGroups('buy coffee\n@home\n@work')).toBe('buy coffee');
   });
 
   it('keeps a leading marker as part of the body', () => {
-    expect(stripGroups('@casa comprar café')).toBe('@casa comprar café');
+    expect(stripGroups('@home buy coffee')).toBe('@home buy coffee');
   });
 
   it('keeps markers in the middle as part of the body', () => {
-    expect(stripGroups('café @casa com @trabalho agora')).toBe(
-      'café @casa com @trabalho agora',
+    expect(stripGroups('coffee @home with @work now')).toBe(
+      'coffee @home with @work now',
     );
   });
 
   it('keeps a marker followed by punctuation as part of the body', () => {
-    expect(stripGroups('list @casa, then @trabalho.')).toBe(
-      'list @casa, then @trabalho.',
+    expect(stripGroups('list @home, then @work.')).toBe(
+      'list @home, then @work.',
     );
   });
 
   it('keeps the line structure of a multiline body', () => {
-    expect(stripGroups('linha um\nlinha dois\nlinha três @trabalho')).toBe(
-      'linha um\nlinha dois\nlinha três',
+    expect(stripGroups('line one\nline two\nline three @work')).toBe(
+      'line one\nline two\nline three',
     );
   });
 
   it('collapses to an empty string when only markers were written', () => {
-    expect(stripGroups(' @casa @trabalho ')).toBe('');
+    expect(stripGroups(' @home @work ')).toBe('');
   });
 
   it('leaves #hashtags alone', () => {
-    expect(stripGroups('porta #casa @casa')).toBe('porta #casa');
+    expect(stripGroups('door #home @home')).toBe('door #home');
   });
 
   it('keeps the indentation of a multiline body', () => {
-    expect(stripGroups('primeira linha\n  segunda linha @casa')).toBe(
-      'primeira linha\n  segunda linha',
+    expect(stripGroups('first line\n  second line @home')).toBe(
+      'first line\n  second line',
     );
   });
 
   it('drops the spaces left around the trailing markers', () => {
-    expect(stripGroups('café @casa  ')).toBe('café');
-    expect(stripGroups('café  \nsegunda @casa')).toBe('café\nsegunda');
+    expect(stripGroups('coffee @home  ')).toBe('coffee');
+    expect(stripGroups('coffee  \nsecond @home')).toBe('coffee\nsecond');
   });
 
   it('leaves an @ glued to a word alone', () => {
-    expect(stripGroups('mail me at foo@bar.com @casa')).toBe(
+    expect(stripGroups('mail me at foo@bar.com @home')).toBe(
       'mail me at foo@bar.com',
     );
   });
