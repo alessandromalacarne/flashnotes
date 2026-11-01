@@ -22,20 +22,20 @@ const notes = [
     id: 'note-1',
     content: 'buy coffee',
     createdAt: '2026-10-14T12:00:00.000Z',
-    groups: [{ id: 'group-1', name: 'casa' }],
+    groups: [{ id: 'group-1', name: 'home' }],
   },
   {
     id: 'note-2',
     content: 'fix the sink',
     createdAt: '2026-10-13T09:30:00.000Z',
     groups: [
-      { id: 'group-1', name: 'casa' },
-      { id: 'group-2', name: 'home' },
+      { id: 'group-1', name: 'home' },
+      { id: 'group-2', name: 'errands' },
     ],
   },
 ];
 
-function renderPage(path = '/group/casa') {
+function renderPage(path = '/group/home') {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
@@ -69,7 +69,7 @@ describe('GroupNotesPage', () => {
     renderPage();
 
     expect(
-      await screen.findByRole('heading', { name: '@casa' }),
+      await screen.findByRole('heading', { name: '@home' }),
     ).toBeInTheDocument();
     expect(screen.getByText('2 notes')).toBeInTheDocument();
   });
@@ -89,7 +89,7 @@ describe('GroupNotesPage', () => {
     expect(
       within(cards[1]!).getByText(/Oct \d{1,2}, 2026/),
     ).toBeInTheDocument();
-    expect(within(cards[0]!).queryByText('@home')).not.toBeInTheDocument();
+    expect(within(cards[0]!).queryByText('@errands')).not.toBeInTheDocument();
   });
 });
 
@@ -108,7 +108,7 @@ describe('GroupNotesPage states', () => {
     renderPage();
 
     expect(
-      await screen.findByText(/no notes with @casa yet/i),
+      await screen.findByText(/no notes with @home yet/i),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /note/i })).toHaveAttribute(
       'href',
@@ -161,14 +161,14 @@ describe('GroupNotesPage create', () => {
       id: 'note-3',
       content: 'water the plants',
       createdAt: '2026-10-15T10:00:00.000Z',
-      groups: [{ id: 'group-1', name: 'casa' }],
+      groups: [{ id: 'group-1', name: 'home' }],
     });
     renderPage();
     const textarea = await screen.findByRole('textbox', { name: 'New note' });
 
-    await user.type(textarea, 'water the plants @casa{Enter}');
+    await user.type(textarea, 'water the plants @home{Enter}');
 
-    expect(mockedCreateNote).toHaveBeenCalledWith('water the plants @casa');
+    expect(mockedCreateNote).toHaveBeenCalledWith('water the plants @home');
     const cards = await findCards();
     expect(cards).toHaveLength(3);
     expect(within(cards[0]!).getByText('water the plants')).toBeInTheDocument();
@@ -185,14 +185,14 @@ describe('GroupNotesPage create and the group match', () => {
       id: 'note-3',
       content: 'water the plants',
       createdAt: '2026-10-15T10:00:00.000Z',
-      groups: [{ id: 'group-1', name: 'casa' }],
+      groups: [{ id: 'group-1', name: 'home' }],
     });
-    renderPage('/group/Casa');
+    renderPage('/group/Home');
     const textarea = await screen.findByRole('textbox', { name: 'New note' });
 
-    await user.type(textarea, 'water the plants @Casa{Enter}');
+    await user.type(textarea, 'water the plants @Home{Enter}');
 
-    expect(mockedCreateNote).toHaveBeenCalledWith('water the plants @Casa');
+    expect(mockedCreateNote).toHaveBeenCalledWith('water the plants @Home');
     expect(await findCards()).toHaveLength(3);
   });
 
@@ -203,15 +203,15 @@ describe('GroupNotesPage create and the group match', () => {
       content: 'water the plants',
       createdAt: '2026-10-15T10:00:00.000Z',
       groups: [
-        { id: 'group-9', name: 'outra' },
-        { id: 'group-1', name: 'casa' },
+        { id: 'group-9', name: 'other' },
+        { id: 'group-1', name: 'home' },
       ],
     });
     renderPage();
     const textarea = await screen.findByRole('textbox', { name: 'New note' });
 
     await user.clear(textarea);
-    await user.type(textarea, 'water the plants @outra @casa{Enter}');
+    await user.type(textarea, 'water the plants @other @home{Enter}');
 
     expect(await findCards()).toHaveLength(3);
     const cards = await findCards();
@@ -224,13 +224,13 @@ describe('GroupNotesPage create and the group match', () => {
       id: 'note-3',
       content: 'water the plants',
       createdAt: '2026-10-15T10:00:00.000Z',
-      groups: [{ id: 'group-9', name: 'outra' }],
+      groups: [{ id: 'group-9', name: 'other' }],
     });
     renderPage();
     const textarea = await screen.findByRole('textbox', { name: 'New note' });
 
     await user.clear(textarea);
-    await user.type(textarea, 'water the plants @outra{Enter}');
+    await user.type(textarea, 'water the plants @other{Enter}');
 
     await waitFor(() => expect(mockedCreateNote).toHaveBeenCalledTimes(1));
     expect(await findCards()).toHaveLength(2);
@@ -245,12 +245,12 @@ describe('GroupNotesPage create errors', () => {
     renderPage();
     const textarea = await screen.findByRole('textbox', { name: 'New note' });
 
-    await user.type(textarea, 'water the plants @casa{Enter}');
+    await user.type(textarea, 'water the plants @home{Enter}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Database is down',
     );
-    expect(textarea).toHaveValue('water the plants @casa');
+    expect(textarea).toHaveValue('water the plants @home');
   });
 });
 
@@ -261,7 +261,7 @@ describe('GroupNotesPage edit', () => {
       id: 'note-1',
       content: 'buy tea',
       createdAt: '2026-10-14T12:00:00.000Z',
-      groups: [{ id: 'group-1', name: 'casa' }],
+      groups: [{ id: 'group-1', name: 'home' }],
     });
     renderPage();
     const [first] = await findCards();
@@ -275,10 +275,10 @@ describe('GroupNotesPage edit', () => {
     expect(editor).toHaveValue('buy coffee');
 
     await user.clear(editor);
-    await user.type(editor, 'buy tea @casa');
+    await user.type(editor, 'buy tea @home');
     await user.click(within(first!).getByRole('button', { name: 'Save' }));
 
-    expect(mockedUpdateNote).toHaveBeenCalledWith('note-1', 'buy tea @casa');
+    expect(mockedUpdateNote).toHaveBeenCalledWith('note-1', 'buy tea @home');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     const cards = await findCards();
     expect(cards).toHaveLength(2);
@@ -295,7 +295,7 @@ describe('GroupNotesPage edit', () => {
       id: 'note-1',
       content: 'buy tea',
       createdAt: '2026-10-14T12:00:00.000Z',
-      groups: [{ id: 'group-1', name: 'casa' }],
+      groups: [{ id: 'group-1', name: 'home' }],
     });
     renderPage();
     const [first] = await findCards();
@@ -303,9 +303,9 @@ describe('GroupNotesPage edit', () => {
     await user.click(within(first!).getByRole('button', { name: 'Edit note' }));
     const editor = within(first!).getByRole('textbox', { name: 'Edit note' });
     await user.clear(editor);
-    await user.type(editor, 'buy tea @casa {Enter}');
+    await user.type(editor, 'buy tea @home {Enter}');
 
-    expect(mockedUpdateNote).toHaveBeenCalledWith('note-1', 'buy tea @casa');
+    expect(mockedUpdateNote).toHaveBeenCalledWith('note-1', 'buy tea @home');
     expect(await screen.findByText('buy tea')).toBeInTheDocument();
   });
 });
@@ -348,7 +348,7 @@ describe('GroupNotesPage edit and the group match', () => {
       id: 'note-1',
       content: 'buy tea',
       createdAt: '2026-10-14T12:00:00.000Z',
-      groups: [{ id: 'group-9', name: 'outra' }],
+      groups: [{ id: 'group-9', name: 'other' }],
     });
     renderPage();
     const [first] = await findCards();
@@ -356,7 +356,7 @@ describe('GroupNotesPage edit and the group match', () => {
     await user.click(within(first!).getByRole('button', { name: 'Edit note' }));
     const editor = within(first!).getByRole('textbox', { name: 'Edit note' });
     await user.clear(editor);
-    await user.type(editor, 'buy tea @outra{Enter}');
+    await user.type(editor, 'buy tea @other{Enter}');
 
     expect(await screen.findByText('1 note')).toBeInTheDocument();
     expect(screen.queryByText('buy tea')).not.toBeInTheDocument();
@@ -377,14 +377,14 @@ describe('GroupNotesPage edit errors', () => {
     await user.click(within(first!).getByRole('button', { name: 'Edit note' }));
     const editor = within(first!).getByRole('textbox', { name: 'Edit note' });
     await user.clear(editor);
-    await user.type(editor, 'buy tea @casa{Enter}');
+    await user.type(editor, 'buy tea @home{Enter}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Database is down',
     );
     expect(
       within(first!).getByRole('textbox', { name: 'Edit note' }),
-    ).toHaveValue('buy tea @casa');
+    ).toHaveValue('buy tea @home');
     expect(screen.getByText('2 notes')).toBeInTheDocument();
   });
 

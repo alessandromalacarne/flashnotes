@@ -56,7 +56,7 @@ beforeEach(() => {
   mockedGetCurrentUser.mockResolvedValue(null);
   mockedCreateNote.mockResolvedValue({
     id: 'note-1',
-    content: 'olá',
+    content: 'hello',
     createdAt: '2026-10-14T00:00:00.000Z',
     groups: [],
   });
@@ -107,7 +107,7 @@ describe('signing in', () => {
   });
 
   it('returns to the requested page after signing in', async () => {
-    renderApp('/app/group/casa');
+    renderApp('/app/group/home');
     const user = await fillCredentials(
       'ana@example.com',
       'correct horse battery',
@@ -116,9 +116,9 @@ describe('signing in', () => {
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
 
     expect(
-      await screen.findByRole('heading', { name: '@casa' }),
+      await screen.findByRole('heading', { name: '@home' }),
     ).toBeInTheDocument();
-    expect(mockedListNotes).toHaveBeenCalledWith('casa');
+    expect(mockedListNotes).toHaveBeenCalledWith('home');
   });
 
   it('shows the API error and stays on the login page', async () => {

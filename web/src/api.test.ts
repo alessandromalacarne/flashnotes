@@ -141,18 +141,18 @@ describe('createNote', () => {
   it('posts the content and returns the created note', async () => {
     const note = {
       id: 'note-1',
-      content: 'olá',
+      content: 'hello',
       createdAt: '2026-10-14T00:00:00.000Z',
-      groups: [{ id: 'group-1', name: 'casa' }],
+      groups: [{ id: 'group-1', name: 'home' }],
     };
     const fetchMock = stubFetch(jsonResponse(note, { status: 201 }));
 
-    await expect(createNote('olá @casa')).resolves.toEqual(note);
+    await expect(createNote('hello @home')).resolves.toEqual(note);
 
     expect(fetchMock).toHaveBeenCalledWith('/api/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: 'olá @casa' }),
+      body: JSON.stringify({ content: 'hello @home' }),
     });
   });
 
@@ -170,13 +170,13 @@ describe('listNotes', () => {
         id: 'note-1',
         content: 'buy coffee',
         createdAt: '2026-10-14T12:00:00.000Z',
-        groups: [{ id: 'group-1', name: 'casa' }],
+        groups: [{ id: 'group-1', name: 'home' }],
       },
     ];
     const fetchMock = stubFetch(jsonResponse(notes));
 
-    await expect(listNotes('casa')).resolves.toEqual(notes);
-    expect(fetchMock).toHaveBeenCalledWith('/api/notes?group=casa', undefined);
+    await expect(listNotes('home')).resolves.toEqual(notes);
+    expect(fetchMock).toHaveBeenCalledWith('/api/notes?group=home', undefined);
   });
 
   it('encodes the group into the query', async () => {
@@ -193,7 +193,7 @@ describe('listNotes', () => {
   it('throws the API message when the notes cannot be loaded', async () => {
     stubFetch(jsonResponse({ message: 'Database is down' }, { status: 500 }));
 
-    await expect(listNotes('casa')).rejects.toThrow('Database is down');
+    await expect(listNotes('home')).rejects.toThrow('Database is down');
   });
 });
 
@@ -201,14 +201,14 @@ describe('listGroups', () => {
   it('returns the groups with their counts', async () => {
     const fetchMock = stubFetch(
       jsonResponse([
-        { id: 'group-1', name: 'casa', count: 2 },
-        { id: 'group-2', name: 'trabalho', count: 1 },
+        { id: 'group-1', name: 'home', count: 2 },
+        { id: 'group-2', name: 'work', count: 1 },
       ]),
     );
 
     await expect(listGroups()).resolves.toEqual([
-      { id: 'group-1', name: 'casa', count: 2 },
-      { id: 'group-2', name: 'trabalho', count: 1 },
+      { id: 'group-1', name: 'home', count: 2 },
+      { id: 'group-2', name: 'work', count: 1 },
     ]);
     expect(fetchMock).toHaveBeenCalledWith('/api/groups', undefined);
   });
@@ -302,16 +302,16 @@ describe('updateNote', () => {
       id: 'note-1',
       content: 'buy tea',
       createdAt: '2026-10-14T00:00:00.000Z',
-      groups: [{ id: 'group-1', name: 'casa' }],
+      groups: [{ id: 'group-1', name: 'home' }],
     };
     const fetchMock = stubFetch(jsonResponse(note));
 
-    await expect(updateNote('note-1', 'buy tea @casa')).resolves.toEqual(note);
+    await expect(updateNote('note-1', 'buy tea @home')).resolves.toEqual(note);
 
     expect(fetchMock).toHaveBeenCalledWith('/api/notes/note-1', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: 'buy tea @casa' }),
+      body: JSON.stringify({ content: 'buy tea @home' }),
     });
   });
 
@@ -321,11 +321,11 @@ describe('updateNote', () => {
         id: 'note/with space',
         content: 'buy coffee',
         createdAt: '2026-10-14T00:00:00.000Z',
-        groups: [{ id: 'group-1', name: 'casa' }],
+        groups: [{ id: 'group-1', name: 'home' }],
       }),
     );
 
-    await updateNote('note/with space', 'buy coffee @casa');
+    await updateNote('note/with space', 'buy coffee @home');
 
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/notes/note%2Fwith%20space',
@@ -336,7 +336,7 @@ describe('updateNote', () => {
   it('throws the API message when the note is gone', async () => {
     stubFetch(jsonResponse({ message: 'Note not found' }, { status: 404 }));
 
-    await expect(updateNote('note-1', 'buy tea @casa')).rejects.toThrow(
+    await expect(updateNote('note-1', 'buy tea @home')).rejects.toThrow(
       'Note not found',
     );
   });
