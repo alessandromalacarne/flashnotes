@@ -88,7 +88,7 @@ Feature modules under `api/src/<feature>/`, each with `*.module.ts`, `*.controll
 
 ### Deck parsing
 
-`api/src/dumps/deck-parser.ts` is the source of truth. Only markers at the end count (`buy coffee @casa` yes; `@casa buy coffee` no), names are lowercased and deduplicated, and `stripDecks` removes them from the body. On update/delete, orphan decks are removed inside the same transaction.
+`api/src/dumps/deck-parser.ts` is the source of truth. Only markers at the end count (`buy coffee @home` yes; `@home buy coffee` no), names are lowercased and deduplicated, and `stripDecks` removes them from the body. On update/delete, orphan decks are removed inside the same transaction.
 
 `web/src/lib/extract-decks.ts` mirrors the parser so `Composer` can validate before the request. The two implementations and their tests (`deck-parser.spec.ts`, `extract-decks.spec.ts`) must stay behaviorally identical; update both when marker rules change (see Core Principles).
 

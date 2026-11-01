@@ -88,10 +88,10 @@ cd web && npm test           # components and flows (jsdom + Testing Library)
 | POST   | `/auth/sign-in`          | `{ "email", "password" }` → 200 `{ "user", "mfaRequired": false }` |
 | GET    | `/auth/me`               | The signed-in user, or `{ "user": null }`          |
 | POST   | `/auth/sign-out`         | Ends the session → 204                             |
-| POST   | `/notes`                 | Creates a note. `{ "content": "buy coffee @casa" }` → 201 `content: "buy coffee"` |
+| POST   | `/notes`                 | Creates a note. `{ "content": "buy coffee @home" }` → 201 `content: "buy coffee"` |
 | GET    | `/notes`                 | Lists notes, newest first                          |
 | GET    | `/notes?group=home`       | Filters by group (case-insensitive)                 |
-| PATCH  | `/notes/:id`             | Replaces the content. `{ "content": "buy tea @casa" }` → 200 |
+| PATCH  | `/notes/:id`             | Replaces the content. `{ "content": "buy tea @home" }` → 200 |
 | DELETE | `/notes/:id`             | Deletes a note → 204                               |
 | GET    | `/groups`                 | Groups with counts, most used first                 |
 | DELETE | `/groups/:id`             | Deletes a group, keeps its notes → 204              |
@@ -102,11 +102,11 @@ Validation errors return 400. Note without a group: `{"message": "Include at lea
 
 ## Notes
 
-- Groups come from the trailing markers (`@home` → `home`), lowercased, no duplicates. Only markers at the end of the note count: `buy coffee @casa @trabalho` links both groups, while `@casa buy coffee` and `buy coffee @casa now` have no group at all. The markers are stripped from the body before it is saved, so a note stores plain text and its groups as a relation. A group whose last note is edited away or deleted is removed from `/groups`.
-- Only a marker at the end links a group: `#casa`, `foo@bar.com` and a marker followed by punctuation are plain text.
+- Groups come from the trailing markers (`@home` → `home`), lowercased, no duplicates. Only markers at the end of the note count: `buy coffee @home @work` links both groups, while `@home buy coffee` and `buy coffee @home now` have no group at all. The markers are stripped from the body before it is saved, so a note stores plain text and its groups as a relation. A group whose last note is edited away or deleted is removed from `/groups`.
+- Only a marker at the end links a group: `#home`, `foo@bar.com` and a marker followed by punctuation are plain text.
 - Web UI: dark theme, public landing page, login/signup, composer (Enter sends, Shift+Enter breaks the line, clicking anywhere focuses the field) and group pages.
 - `/app/group/:group` lists the notes of a group with an empty composer (type the trailing marker yourself), inline editing and delete behind a `confirm?` step.
-- Export files render each note's groups in the header (`@casa`), because the body no longer carries them.
+- Export files render each note's groups in the header (`@home`), because the body no longer carries them.
 - Accounts use server-side cookie sessions (`HttpOnly`, `SameSite=Lax`): 3-day idle timeout, 14-day absolute lifetime. The cookie is `Secure` and uses the `__Host-` prefix when `NODE_ENV=production`; development uses a plain `sid` cookie so the Vite proxy on `http://localhost` works.
 - Sessions and password hashing are owned by `@nestjs/authentication`; the session store is in-memory for now, so a restart signs everyone out.
 - Prisma commands load `api/.env` automatically (values already in the environment win), so `npm run prisma:generate` and `npm run db:migrate` work on any OS.
