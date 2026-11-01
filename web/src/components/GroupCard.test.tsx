@@ -18,11 +18,11 @@ function renderCard(name: string) {
 
 describe('GroupCard', () => {
   it('links the group to its page', () => {
-    renderCard('casa');
+    renderCard('home');
 
-    expect(screen.getByRole('link', { name: /@casa/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /@home/ })).toHaveAttribute(
       'href',
-      '/app/group/casa',
+      '/app/group/home',
     );
   });
 

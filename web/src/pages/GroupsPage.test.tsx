@@ -14,8 +14,8 @@ const mockedListGroups = vi.mocked(listGroups);
 const mockedDeleteGroup = vi.mocked(deleteGroup);
 
 const groups = [
-  { id: 'group-1', name: 'casa', count: 3 },
-  { id: 'group-2', name: 'trabalho', count: 1 },
+  { id: 'group-1', name: 'home', count: 3 },
+  { id: 'group-2', name: 'work', count: 1 },
 ];
 
 function renderPage() {
@@ -36,13 +36,13 @@ describe('GroupsPage', () => {
   it('lists every group with its note count', async () => {
     renderPage();
 
-    const casa = await screen.findByRole('listitem', { name: /casa/ });
-    expect(within(casa).getByText('@casa')).toBeInTheDocument();
-    expect(within(casa).getByText('3 notes')).toBeInTheDocument();
+    const home = await screen.findByRole('listitem', { name: /home/ });
+    expect(within(home).getByText('@home')).toBeInTheDocument();
+    expect(within(home).getByText('3 notes')).toBeInTheDocument();
 
-    const trabalho = screen.getByRole('listitem', { name: /trabalho/ });
-    expect(within(trabalho).getByText('@trabalho')).toBeInTheDocument();
-    expect(within(trabalho).getByText('1 note')).toBeInTheDocument();
+    const work = screen.getByRole('listitem', { name: /work/ });
+    expect(within(work).getByText('@work')).toBeInTheDocument();
+    expect(within(work).getByText('1 note')).toBeInTheDocument();
   });
 
   it('shows a loading state before the groups arrive', async () => {
@@ -50,7 +50,7 @@ describe('GroupsPage', () => {
 
     expect(screen.getByRole('status')).toBeInTheDocument();
 
-    await screen.findByRole('listitem', { name: /casa/ });
+    await screen.findByRole('listitem', { name: /home/ });
   });
 
   it('invites you to note when there are no groups', async () => {
@@ -69,10 +69,10 @@ describe('GroupsPage deletion', () => {
   it('deletes a group and drops it from the grid', async () => {
     const user = userEvent.setup();
     renderPage();
-    await screen.findByRole('listitem', { name: /casa/ });
+    await screen.findByRole('listitem', { name: /home/ });
 
     const deleteButton = screen.getByRole('button', {
-      name: 'Delete group @casa',
+      name: 'Delete group @home',
     });
     expect(deleteButton.querySelector('svg')).not.toBeNull();
 
@@ -80,9 +80,9 @@ describe('GroupsPage deletion', () => {
 
     expect(mockedDeleteGroup).toHaveBeenCalledWith('group-1');
     expect(
-      await screen.findByRole('listitem', { name: /trabalho/ }),
+      await screen.findByRole('listitem', { name: /work/ }),
     ).toBeInTheDocument();
-    expect(screen.queryByText('@casa')).not.toBeInTheDocument();
+    expect(screen.queryByText('@home')).not.toBeInTheDocument();
     expect(mockedListGroups).toHaveBeenCalledTimes(1);
   });
 });
@@ -101,16 +101,16 @@ describe('GroupsPage errors', () => {
     const user = userEvent.setup();
     mockedDeleteGroup.mockRejectedValue(new Error('Group not found'));
     renderPage();
-    await screen.findByRole('listitem', { name: /casa/ });
+    await screen.findByRole('listitem', { name: /home/ });
 
     await user.click(
-      screen.getByRole('button', { name: 'Delete group @casa' }),
+      screen.getByRole('button', { name: 'Delete group @home' }),
     );
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Group not found',
     );
-    expect(screen.getByText('@casa')).toBeInTheDocument();
+    expect(screen.getByText('@home')).toBeInTheDocument();
   });
 
   it('falls back to a generic message when loading fails without an error', async () => {
@@ -126,10 +126,10 @@ describe('GroupsPage errors', () => {
     const user = userEvent.setup();
     mockedDeleteGroup.mockRejectedValue('boom');
     renderPage();
-    await screen.findByRole('listitem', { name: /casa/ });
+    await screen.findByRole('listitem', { name: /home/ });
 
     await user.click(
-      screen.getByRole('button', { name: 'Delete group @casa' }),
+      screen.getByRole('button', { name: 'Delete group @home' }),
     );
 
     expect(await screen.findByRole('alert')).toHaveTextContent(

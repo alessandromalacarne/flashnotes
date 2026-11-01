@@ -1,17 +1,17 @@
 -- The rename migration moved the relation to `Deck` but left the marker text in the
--- bodies written before it (`#casa buy coffee`): back then the `#...` in the content was
+-- bodies written before it (`#home buy coffee`): back then the `#...` in the content was
 -- the only source of the relation. This migration takes the marker out of the bodies it
 -- belongs to.
 --
 -- Four passes, applied innermost first. Each one matches only marker names the dump is
 -- actually linked to, and only when the name is not a prefix of a longer one — so a body
--- saying `#casa-grande #casa` loses both, and one saying `#casa` while linked to
--- `casa-grande` loses nothing:
+-- saying `#home-office #home` loses both, and one saying `#home` while linked to
+-- `home-office` loses nothing:
 --
 --   (1) a marker alone on its line takes the whole line with it
 --   (2) a marker opening a line keeps the line, drops the trailing space
 --   (3) a marker inside a line drops the space that carried it
---   (4) a marker glued to a word (`porta#casa`), the old parser matched it too
+--   (4) a marker glued to a word (`door#home`), the old parser matched it too
 --
 -- A `#word` whose deck was deleted stays exactly as written: it is literal text now, and
 -- there is no name left to match it against. A body that was nothing but markers ends up

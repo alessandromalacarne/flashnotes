@@ -1,5 +1,5 @@
-// A group marker is `@name`, and only at the end of the note: `@casa buy
-// coffee` is plain text, while `buy coffee @casa` names a group. `/u` keeps
+// A group marker is `@name`, and only at the end of the note: `@home buy
+// coffee` is plain text, while `buy coffee @home` names a group. `/u` keeps
 // accented names together and `\s` lets a marker sit on its own last line.
 const TRAILING_MARKERS =
   /(?:^|\s)((?:@[\p{L}\p{N}_-]+(?:\s+@[\p{L}\p{N}_-]+)*))$/u;

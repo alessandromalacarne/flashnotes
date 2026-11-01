@@ -25,7 +25,7 @@ describe('rejecting an invalid update', () => {
   it('rejects an update without any deck and keeps the dump untouched', async () => {
     const created = await agent
       .post('/notes')
-      .send({ content: 'buy coffee @casa' })
+      .send({ content: 'buy coffee @home' })
       .expect(201);
 
     const response = await agent
@@ -47,12 +47,12 @@ describe('rejecting an invalid update', () => {
   it('rejects an update whose whole body is the marker', async () => {
     const created = await agent
       .post('/notes')
-      .send({ content: 'buy coffee @casa' })
+      .send({ content: 'buy coffee @home' })
       .expect(201);
 
     const response = await agent
       .patch(`/notes/${created.body.id}`)
-      .send({ content: '@casa' })
+      .send({ content: '@home' })
       .expect(400);
 
     expect(response.body.message).toBe(
@@ -69,7 +69,7 @@ describe('rejecting an invalid update', () => {
   it('rejects empty or blank content', async () => {
     const created = await agent
       .post('/notes')
-      .send({ content: 'buy coffee @casa' })
+      .send({ content: 'buy coffee @home' })
       .expect(201);
 
     await agent
@@ -86,7 +86,7 @@ describe('rejecting an invalid update', () => {
   it('returns 404 for an unknown dump', async () => {
     const response = await agent
       .patch(`/notes/${randomUUID()}`)
-      .send({ content: 'buy coffee @casa' })
+      .send({ content: 'buy coffee @home' })
       .expect(404);
 
     expect(response.body.message).toBe('Note not found');
@@ -97,7 +97,7 @@ describe('deleting a dump', () => {
   it('removes the dump from the lists', async () => {
     const created = await agent
       .post('/notes')
-      .send({ content: 'buy coffee @casa' })
+      .send({ content: 'buy coffee @home' })
       .expect(201);
 
     await agent.delete(`/notes/${created.body.id}`).expect(204);
@@ -106,7 +106,7 @@ describe('deleting a dump', () => {
 
     expect(all.body).toEqual([]);
 
-    const byDeck = await agent.get('/notes?group=casa').expect(200);
+    const byDeck = await agent.get('/notes?group=home').expect(200);
 
     expect(byDeck.body).toEqual([]);
   });
@@ -120,12 +120,12 @@ describe('deleting a dump', () => {
   it('keeps the decks other dumps still use and drops the empty ones', async () => {
     await agent
       .post('/notes')
-      .send({ content: 'item one @casa @trabalho' })
+      .send({ content: 'item one @home @work' })
       .expect(201);
 
     const removed = await agent
       .post('/notes')
-      .send({ content: 'item two @lazer' })
+      .send({ content: 'item two @leisure' })
       .expect(201);
 
     await agent.delete(`/notes/${removed.body.id}`).expect(204);
@@ -133,8 +133,8 @@ describe('deleting a dump', () => {
     const decks = await agent.get('/groups').expect(200);
 
     expect(decks.body).toEqual([
-      { id: expect.any(String), name: 'casa', count: 1 },
-      { id: expect.any(String), name: 'trabalho', count: 1 },
+      { id: expect.any(String), name: 'home', count: 1 },
+      { id: expect.any(String), name: 'work', count: 1 },
     ]);
   });
 });

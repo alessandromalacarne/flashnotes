@@ -33,11 +33,11 @@ function renderApp(path = '/app') {
   );
 }
 
-const casaNote = {
+const homeNote = {
   id: 'note-1',
   content: 'buy coffee',
   createdAt: '2026-10-10T12:00:00.000Z',
-  groups: [{ id: 'group-1', name: 'casa' }],
+  groups: [{ id: 'group-1', name: 'home' }],
 };
 
 beforeEach(() => {
@@ -47,7 +47,7 @@ beforeEach(() => {
     id: 'note-1',
     content: 'buy coffee',
     createdAt: '2026-10-10T12:00:00.000Z',
-    groups: [{ id: 'group-1', name: 'casa' }],
+    groups: [{ id: 'group-1', name: 'home' }],
   });
   mockedListNotes.mockResolvedValue([]);
   mockedListGroups.mockResolvedValue([]);
@@ -78,9 +78,9 @@ describe('composer', () => {
     renderApp();
     const textarea = await screen.findByRole('textbox', { name: /note/i });
 
-    await user.type(textarea, 'buy coffee @casa{Enter}');
+    await user.type(textarea, 'buy coffee @home{Enter}');
 
-    expect(mockedCreateNote).toHaveBeenCalledWith('buy coffee @casa');
+    expect(mockedCreateNote).toHaveBeenCalledWith('buy coffee @home');
     expect(textarea).toHaveValue('');
     expect(await screen.findByText(/saved/i)).toBeInTheDocument();
   });
@@ -90,10 +90,10 @@ describe('composer', () => {
     renderApp();
     const textarea = await screen.findByRole('textbox', { name: /note/i });
 
-    await user.type(textarea, 'line one{Shift>}{Enter}{/Shift}line two @casa');
+    await user.type(textarea, 'line one{Shift>}{Enter}{/Shift}line two @home');
 
     expect(mockedCreateNote).not.toHaveBeenCalled();
-    expect(textarea).toHaveValue('line one\nline two @casa');
+    expect(textarea).toHaveValue('line one\nline two @home');
   });
 
   it('clicking anywhere on the block focuses the field', async () => {
@@ -127,7 +127,7 @@ describe('composer errors', () => {
     renderApp();
     const textarea = await screen.findByRole('textbox', { name: /note/i });
 
-    await user.type(textarea, 'varrer @casa o chão{Enter}');
+    await user.type(textarea, 'sweep @home the floor{Enter}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Include at least one @group in the note',
@@ -141,24 +141,24 @@ describe('composer errors', () => {
     renderApp();
     const textarea = await screen.findByRole('textbox', { name: /note/i });
 
-    await user.type(textarea, 'algo @casa{Enter}');
+    await user.type(textarea, 'something @home{Enter}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Database is down',
     );
-    expect(textarea).toHaveValue('algo @casa');
+    expect(textarea).toHaveValue('something @home');
   });
 });
 
 describe('group pages', () => {
   it('opens the groups page straight from the URL', async () => {
     mockedListGroups.mockResolvedValue([
-      { id: 'group-1', name: 'casa', count: 2 },
+      { id: 'group-1', name: 'home', count: 2 },
     ]);
     renderApp('/app/groups');
 
     expect(
-      await screen.findByRole('listitem', { name: /casa/ }),
+      await screen.findByRole('listitem', { name: /home/ }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole('textbox', { name: /note/i }),
@@ -166,8 +166,8 @@ describe('group pages', () => {
   });
 
   it('opens a group page straight from the URL', async () => {
-    mockedListNotes.mockResolvedValue([casaNote]);
-    renderApp('/app/group/casa');
+    mockedListNotes.mockResolvedValue([homeNote]);
+    renderApp('/app/group/home');
 
     expect(await screen.findByText('buy coffee')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'New note' })).toHaveValue('');
@@ -176,14 +176,14 @@ describe('group pages', () => {
   it('opens the notes of a group clicked on the groups page', async () => {
     const user = userEvent.setup();
     mockedListGroups.mockResolvedValue([
-      { id: 'group-1', name: 'casa', count: 2 },
+      { id: 'group-1', name: 'home', count: 2 },
     ]);
-    mockedListNotes.mockResolvedValue([casaNote]);
+    mockedListNotes.mockResolvedValue([homeNote]);
     renderApp('/app/groups');
 
-    await user.click(await screen.findByRole('link', { name: /@casa/ }));
+    await user.click(await screen.findByRole('link', { name: /@home/ }));
 
-    expect(mockedListNotes).toHaveBeenCalledWith('casa');
+    expect(mockedListNotes).toHaveBeenCalledWith('home');
     expect(await screen.findByText('buy coffee')).toBeInTheDocument();
   });
 });
@@ -192,7 +192,7 @@ describe('navigation', () => {
   it('navigates between the composer and the groups page', async () => {
     const user = userEvent.setup();
     mockedListGroups.mockResolvedValue([
-      { id: 'group-1', name: 'casa', count: 2 },
+      { id: 'group-1', name: 'home', count: 2 },
     ]);
     renderApp();
 
@@ -204,7 +204,7 @@ describe('navigation', () => {
     await user.click(decksLink);
 
     expect(
-      await screen.findByRole('listitem', { name: /casa/ }),
+      await screen.findByRole('listitem', { name: /home/ }),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'groups' }).className).toContain(
       'text-ink',
@@ -221,8 +221,8 @@ describe('navigation', () => {
   });
 
   it('keeps the groups link highlighted on a group page', async () => {
-    mockedListNotes.mockResolvedValue([casaNote]);
-    renderApp('/app/group/casa');
+    mockedListNotes.mockResolvedValue([homeNote]);
+    renderApp('/app/group/home');
 
     await screen.findByText('buy coffee');
 
