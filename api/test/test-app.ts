@@ -40,6 +40,6 @@ export async function signedInAgent(
 
 export async function truncateAll(prisma: PrismaService): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "Dump", "Deck", "User" CASCADE',
+    'TRUNCATE TABLE "Note", "Group", "User" CASCADE',
   );
 }

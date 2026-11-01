@@ -24,20 +24,20 @@ afterAll(async () => {
 describe('rejecting an invalid update', () => {
   it('rejects an update without any deck and keeps the dump untouched', async () => {
     const created = await agent
-      .post('/dumps')
+      .post('/notes')
       .send({ content: 'buy coffee @casa' })
       .expect(201);
 
     const response = await agent
-      .patch(`/dumps/${created.body.id}`)
+      .patch(`/notes/${created.body.id}`)
       .send({ content: 'text without a deck' })
       .expect(400);
 
     expect(response.body.message).toBe(
-      'Include at least one @deck in the dump',
+      'Include at least one @group in the note',
     );
 
-    const dumps = await agent.get('/dumps').expect(200);
+    const dumps = await agent.get('/notes').expect(200);
 
     expect(dumps.body).toMatchObject([
       { id: created.body.id, content: 'buy coffee' },
@@ -46,18 +46,20 @@ describe('rejecting an invalid update', () => {
 
   it('rejects an update whose whole body is the marker', async () => {
     const created = await agent
-      .post('/dumps')
+      .post('/notes')
       .send({ content: 'buy coffee @casa' })
       .expect(201);
 
     const response = await agent
-      .patch(`/dumps/${created.body.id}`)
+      .patch(`/notes/${created.body.id}`)
       .send({ content: '@casa' })
       .expect(400);
 
-    expect(response.body.message).toBe('The dump needs text besides the @deck');
+    expect(response.body.message).toBe(
+      'The note needs text besides the @group',
+    );
 
-    const dumps = await agent.get('/dumps').expect(200);
+    const dumps = await agent.get('/notes').expect(200);
 
     expect(dumps.body).toMatchObject([
       { id: created.body.id, content: 'buy coffee' },
@@ -66,69 +68,69 @@ describe('rejecting an invalid update', () => {
 
   it('rejects empty or blank content', async () => {
     const created = await agent
-      .post('/dumps')
+      .post('/notes')
       .send({ content: 'buy coffee @casa' })
       .expect(201);
 
     await agent
-      .patch(`/dumps/${created.body.id}`)
+      .patch(`/notes/${created.body.id}`)
       .send({ content: '' })
       .expect(400);
 
     await agent
-      .patch(`/dumps/${created.body.id}`)
+      .patch(`/notes/${created.body.id}`)
       .send({ content: '   ' })
       .expect(400);
   });
 
   it('returns 404 for an unknown dump', async () => {
     const response = await agent
-      .patch(`/dumps/${randomUUID()}`)
+      .patch(`/notes/${randomUUID()}`)
       .send({ content: 'buy coffee @casa' })
       .expect(404);
 
-    expect(response.body.message).toBe('Dump not found');
+    expect(response.body.message).toBe('Note not found');
   });
 });
 
 describe('deleting a dump', () => {
   it('removes the dump from the lists', async () => {
     const created = await agent
-      .post('/dumps')
+      .post('/notes')
       .send({ content: 'buy coffee @casa' })
       .expect(201);
 
-    await agent.delete(`/dumps/${created.body.id}`).expect(204);
+    await agent.delete(`/notes/${created.body.id}`).expect(204);
 
-    const all = await agent.get('/dumps').expect(200);
+    const all = await agent.get('/notes').expect(200);
 
     expect(all.body).toEqual([]);
 
-    const byDeck = await agent.get('/dumps?deck=casa').expect(200);
+    const byDeck = await agent.get('/notes?group=casa').expect(200);
 
     expect(byDeck.body).toEqual([]);
   });
 
   it('returns 404 for an unknown dump', async () => {
-    const response = await agent.delete(`/dumps/${randomUUID()}`).expect(404);
+    const response = await agent.delete(`/notes/${randomUUID()}`).expect(404);
 
-    expect(response.body.message).toBe('Dump not found');
+    expect(response.body.message).toBe('Note not found');
   });
 
   it('keeps the decks other dumps still use and drops the empty ones', async () => {
     await agent
-      .post('/dumps')
+      .post('/notes')
       .send({ content: 'item one @casa @trabalho' })
       .expect(201);
 
     const removed = await agent
-      .post('/dumps')
+      .post('/notes')
       .send({ content: 'item two @lazer' })
       .expect(201);
 
-    await agent.delete(`/dumps/${removed.body.id}`).expect(204);
+    await agent.delete(`/notes/${removed.body.id}`).expect(204);
 
-    const decks = await agent.get('/decks').expect(200);
+    const decks = await agent.get('/groups').expect(200);
 
     expect(decks.body).toEqual([
       { id: expect.any(String), name: 'casa', count: 1 },

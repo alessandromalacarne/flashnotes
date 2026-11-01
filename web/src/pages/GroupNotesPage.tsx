@@ -1,32 +1,32 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { Link, useParams } from 'react-router';
 import {
-  createDump,
-  deleteDump,
-  listDumps,
-  updateDump,
-  type Dump,
+  createNote,
+  deleteNote,
+  listNotes,
+  updateNote,
+  type Note,
 } from '../api';
 import { Composer } from '../components/Composer';
-import { DumpCard } from '../components/DumpCard';
+import { NoteCard } from '../components/NoteCard';
 
-function useDeckDumps(deck: string) {
-  const [dumps, setDumps] = useState<Dump[] | null>(null);
+function useGroupNotes(group: string) {
+  const [notes, setNotes] = useState<Note[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
 
-    listDumps(deck)
+    listNotes(group)
       .then((loaded) => {
         if (active) {
-          setDumps(loaded);
+          setNotes(loaded);
         }
       })
       .catch((cause: unknown) => {
         if (active) {
           setError(
-            cause instanceof Error ? cause.message : 'Could not load the dumps',
+            cause instanceof Error ? cause.message : 'Could not load the notes',
           );
         }
       });
@@ -34,72 +34,72 @@ function useDeckDumps(deck: string) {
     return () => {
       active = false;
     };
-  }, [deck]);
+  }, [group]);
 
-  return { dumps, error, setDumps };
+  return { notes, error, setNotes };
 }
 
-function carriesDeck(dump: Dump, deck: string): boolean {
-  return dump.decks.some((dumpDeck) => dumpDeck.name === deck);
+function carriesGroup(note: Note, group: string): boolean {
+  return note.groups.some((groupEntry) => groupEntry.name === group);
 }
 
-function useDumpActions(
-  deck: string,
-  setDumps: Dispatch<SetStateAction<Dump[] | null>>,
+function useNoteActions(
+  group: string,
+  setNotes: Dispatch<SetStateAction<Note[] | null>>,
 ) {
-  const target = deck.toLowerCase();
+  const target = group.toLowerCase();
 
   async function create(content: string) {
-    const created = await createDump(content);
+    const created = await createNote(content);
 
-    if (carriesDeck(created, target)) {
-      setDumps((current) =>
+    if (carriesGroup(created, target)) {
+      setNotes((current) =>
         current === null ? current : [created, ...current],
       );
     }
   }
 
   async function update(id: string, content: string) {
-    const updated = await updateDump(id, content);
+    const updated = await updateNote(id, content);
 
-    setDumps((current) => {
+    setNotes((current) => {
       if (current === null) {
         return current;
       }
-      if (!carriesDeck(updated, target)) {
-        return current.filter((dump) => dump.id !== id);
+      if (!carriesGroup(updated, target)) {
+        return current.filter((note) => note.id !== id);
       }
 
-      return current.map((dump) => (dump.id === id ? updated : dump));
+      return current.map((note) => (note.id === id ? updated : note));
     });
   }
 
   async function remove(id: string) {
-    await deleteDump(id);
-    setDumps((current) =>
-      current === null ? current : current.filter((dump) => dump.id !== id),
+    await deleteNote(id);
+    setNotes((current) =>
+      current === null ? current : current.filter((note) => note.id !== id),
     );
   }
 
   return { create, update, remove };
 }
 
-export function DeckDumpsPage() {
-  const { deck = '' } = useParams();
-  const { dumps, error, setDumps } = useDeckDumps(deck);
-  const { create, update, remove } = useDumpActions(deck, setDumps);
+export function GroupNotesPage() {
+  const { group = '' } = useParams();
+  const { notes, error, setNotes } = useGroupNotes(group);
+  const { create, update, remove } = useNoteActions(group, setNotes);
   const countLabel =
-    dumps === null
+    notes === null
       ? null
-      : dumps.length === 1
-        ? '1 dump'
-        : `${dumps.length} dumps`;
+      : notes.length === 1
+        ? '1 note'
+        : `${notes.length} notes`;
 
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-2xl border border-line bg-surface p-5 sm:p-8">
       <header className="flex shrink-0 items-baseline gap-3">
         <h1 className="text-sm font-medium tracking-widest text-ink-faint uppercase">
-          @{deck}
+          @{group}
         </h1>
         {countLabel === null ? null : (
           <p className="text-xs text-ink-faint">{countLabel}</p>
@@ -114,27 +114,27 @@ export function DeckDumpsPage() {
         <p role="alert" className="mt-4 text-sm font-medium text-danger">
           {error}
         </p>
-      ) : dumps === null ? (
+      ) : notes === null ? (
         <p role="status" className="mt-4 text-sm text-ink-faint">
-          loading dumps…
+          loading notes…
         </p>
-      ) : dumps.length === 0 ? (
+      ) : notes.length === 0 ? (
         <p className="mt-4 text-sm text-ink-soft">
-          No dumps with @{deck} yet.{' '}
+          No notes with @{group} yet.{' '}
           <Link
             to="/app"
             className="text-mark underline-offset-4 hover:underline"
           >
-            write a dump
+            write a note
           </Link>{' '}
           to add the first one.
         </p>
       ) : (
         <ul className="mt-6 grid list-none gap-3">
-          {dumps.map((dump) => (
-            <DumpCard
-              key={dump.id}
-              dump={dump}
+          {notes.map((note) => (
+            <NoteCard
+              key={note.id}
+              note={note}
               onUpdate={update}
               onDelete={remove}
             />

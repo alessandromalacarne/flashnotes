@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { extractDecks, stripDecks } from '../lib/extract-decks';
+import { extractGroups, stripGroups } from '../lib/extract-groups';
 
 interface ComposerProps {
   onSubmit: (content: string) => Promise<void>;
@@ -27,12 +27,12 @@ function useComposer(onSubmit: (content: string) => Promise<void>) {
       setError('Write something before dumping');
       return;
     }
-    if (extractDecks(content).length === 0) {
-      setError('Include at least one @deck in the dump');
+    if (extractGroups(content).length === 0) {
+      setError('Include at least one @group in the note');
       return;
     }
-    if (stripDecks(content).length === 0) {
-      setError('The dump needs text besides the @deck');
+    if (stripGroups(content).length === 0) {
+      setError('The note needs text besides the @group');
       return;
     }
 
@@ -46,7 +46,7 @@ function useComposer(onSubmit: (content: string) => Promise<void>) {
       savedTimer.current = window.setTimeout(() => setSaved(false), 1600);
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : 'Could not send the dump',
+        cause instanceof Error ? cause.message : 'Could not send the note',
       );
     } finally {
       setBusy(false);
@@ -70,10 +70,10 @@ function ComposerFooter({ error, saved, busy }: ComposerFooterProps) {
           {error}
         </p>
       ) : saved ? (
-        <p className="animate-fade-in text-sm text-ink-soft">dump saved</p>
+        <p className="animate-fade-in text-sm text-ink-soft">note saved</p>
       ) : (
         <p className="text-sm text-ink-faint">
-          Enter sends · end with at least one @deck
+          Enter sends · end with at least one @group
         </p>
       )}
 
@@ -82,7 +82,7 @@ function ComposerFooter({ error, saved, busy }: ComposerFooterProps) {
         disabled={busy}
         className="ml-auto inline-flex min-h-11 shrink-0 items-center rounded-full bg-mark px-6 font-semibold text-mark-contrast transition-[filter] hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Dump
+        Note
       </button>
     </div>
   );
@@ -94,7 +94,7 @@ export function Composer({ onSubmit }: ComposerProps) {
 
   return (
     <form
-      aria-label="New dump"
+      aria-label="New note"
       onSubmit={(event) => {
         event.preventDefault();
         void submit();
@@ -111,8 +111,8 @@ export function Composer({ onSubmit }: ComposerProps) {
       <textarea
         ref={textareaRef}
         autoFocus
-        aria-label="New dump"
-        placeholder="Write what's on your mind... and finish with a @deck"
+        aria-label="New note"
+        placeholder="Write what's on your mind... and finish with a @group"
         value={value}
         onChange={(event) => change(event.target.value)}
         onKeyDown={(event) => {

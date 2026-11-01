@@ -62,7 +62,7 @@ coverage_min = 80
 # `extends` gap as web), so the sweep covers what that suite covers: the deck
 # parser. Widen it to the e2e suite once mido merges stryker.config.json.
 [targets.api.mutation]
-command = ["npx", "--no-install", "stryker", "run", "--testRunner", "vitest", "--timeoutMS", "30000", "--mutate", "src/dumps/deck-parser.ts"]
+command = ["npx", "--no-install", "stryker", "run", "--testRunner", "vitest", "--timeoutMS", "30000", "--mutate", "src/notes/group-parser.ts"]
 
 [failure]
 max_attempts_per_gate = 3

@@ -2,44 +2,44 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createDump, deleteDump, listDumps, updateDump } from '../api';
-import { DeckDumpsPage } from './DeckDumpsPage';
+import { createNote, deleteNote, listNotes, updateNote } from '../api';
+import { GroupNotesPage } from './GroupNotesPage';
 
 vi.mock('../api', () => ({
-  createDump: vi.fn(),
-  deleteDump: vi.fn(),
-  listDumps: vi.fn(),
-  updateDump: vi.fn(),
+  createNote: vi.fn(),
+  deleteNote: vi.fn(),
+  listNotes: vi.fn(),
+  updateNote: vi.fn(),
 }));
 
-const mockedCreateDump = vi.mocked(createDump);
-const mockedDeleteDump = vi.mocked(deleteDump);
-const mockedListDumps = vi.mocked(listDumps);
-const mockedUpdateDump = vi.mocked(updateDump);
+const mockedCreateNote = vi.mocked(createNote);
+const mockedDeleteNote = vi.mocked(deleteNote);
+const mockedListNotes = vi.mocked(listNotes);
+const mockedUpdateNote = vi.mocked(updateNote);
 
-const dumps = [
+const notes = [
   {
-    id: 'dump-1',
+    id: 'note-1',
     content: 'buy coffee',
     createdAt: '2026-10-14T12:00:00.000Z',
-    decks: [{ id: 'deck-1', name: 'casa' }],
+    groups: [{ id: 'group-1', name: 'casa' }],
   },
   {
-    id: 'dump-2',
+    id: 'note-2',
     content: 'fix the sink',
     createdAt: '2026-10-13T09:30:00.000Z',
-    decks: [
-      { id: 'deck-1', name: 'casa' },
-      { id: 'deck-2', name: 'home' },
+    groups: [
+      { id: 'group-1', name: 'casa' },
+      { id: 'group-2', name: 'home' },
     ],
   },
 ];
 
-function renderPage(path = '/deck/casa') {
+function renderPage(path = '/group/casa') {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route path="/deck/:deck" element={<DeckDumpsPage />} />
+        <Route path="/group/:group" element={<GroupNotesPage />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -51,12 +51,12 @@ async function findCards() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockedListDumps.mockResolvedValue(dumps);
-  mockedDeleteDump.mockResolvedValue(undefined);
+  mockedListNotes.mockResolvedValue(notes);
+  mockedDeleteNote.mockResolvedValue(undefined);
 });
 
-describe('DeckDumpsPage', () => {
-  it('shows the dumps of the deck from the URL', async () => {
+describe('GroupNotesPage', () => {
+  it('shows the notes of the group from the URL', async () => {
     renderPage();
 
     const cards = await screen.findAllByRole('listitem');
@@ -65,23 +65,23 @@ describe('DeckDumpsPage', () => {
     expect(within(cards[1]!).getByText('fix the sink')).toBeInTheDocument();
   });
 
-  it('heads the page with the deck and how many dumps it holds', async () => {
+  it('heads the page with the group and how many notes it holds', async () => {
     renderPage();
 
     expect(
       await screen.findByRole('heading', { name: '@casa' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('2 dumps')).toBeInTheDocument();
+    expect(screen.getByText('2 notes')).toBeInTheDocument();
   });
 
-  it('uses the singular for a single dump', async () => {
-    mockedListDumps.mockResolvedValue([dumps[0]!]);
+  it('uses the singular for a single note', async () => {
+    mockedListNotes.mockResolvedValue([notes[0]!]);
     renderPage();
 
-    expect(await screen.findByText('1 dump')).toBeInTheDocument();
+    expect(await screen.findByText('1 note')).toBeInTheDocument();
   });
 
-  it('shows the decks and the date of each dump', async () => {
+  it('shows the groups and the date of each note', async () => {
     renderPage();
 
     const cards = await screen.findAllByRole('listitem');
@@ -93,33 +93,33 @@ describe('DeckDumpsPage', () => {
   });
 });
 
-describe('DeckDumpsPage states', () => {
-  it('shows a loading state before the dumps arrive', async () => {
+describe('GroupNotesPage states', () => {
+  it('shows a loading state before the notes arrive', async () => {
     renderPage();
 
     expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.queryByText(/dumps$/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/notes$/)).not.toBeInTheDocument();
 
     await screen.findAllByRole('listitem');
   });
 
-  it('invites you to dump when the deck has no dumps', async () => {
-    mockedListDumps.mockResolvedValue([]);
+  it('invites you to note when the group has no notes', async () => {
+    mockedListNotes.mockResolvedValue([]);
     renderPage();
 
     expect(
-      await screen.findByText(/no dumps with @casa yet/i),
+      await screen.findByText(/no notes with @casa yet/i),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /dump/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /note/i })).toHaveAttribute(
       'href',
       '/app',
     );
   });
 });
 
-describe('DeckDumpsPage errors', () => {
-  it('shows the API error when the dumps cannot be loaded', async () => {
-    mockedListDumps.mockRejectedValue(new Error('Database is down'));
+describe('GroupNotesPage errors', () => {
+  it('shows the API error when the notes cannot be loaded', async () => {
+    mockedListNotes.mockRejectedValue(new Error('Database is down'));
     renderPage();
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -128,87 +128,87 @@ describe('DeckDumpsPage errors', () => {
   });
 
   it('falls back to a generic message when loading fails without an error', async () => {
-    mockedListDumps.mockRejectedValue('boom');
+    mockedListNotes.mockRejectedValue('boom');
     renderPage();
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Could not load the dumps',
+      'Could not load the notes',
     );
   });
 
-  it('reads the decoded deck from the URL', async () => {
-    renderPage('/deck/caf%C3%A9');
+  it('reads the decoded group from the URL', async () => {
+    renderPage('/group/caf%C3%A9');
 
     await screen.findAllByRole('listitem');
 
-    expect(mockedListDumps).toHaveBeenCalledWith('café');
+    expect(mockedListNotes).toHaveBeenCalledWith('café');
     expect(screen.getByRole('heading', { name: '@café' })).toBeInTheDocument();
   });
 });
 
-describe('DeckDumpsPage create', () => {
+describe('GroupNotesPage create', () => {
   it('starts the composer empty', async () => {
     renderPage();
 
     expect(
-      await screen.findByRole('textbox', { name: 'New dump' }),
+      await screen.findByRole('textbox', { name: 'New note' }),
     ).toHaveValue('');
   });
 
-  it('adds the new dump to the top of the list without refetching', async () => {
+  it('adds the new note to the top of the list without refetching', async () => {
     const user = userEvent.setup();
-    mockedCreateDump.mockResolvedValue({
-      id: 'dump-3',
+    mockedCreateNote.mockResolvedValue({
+      id: 'note-3',
       content: 'water the plants',
       createdAt: '2026-10-15T10:00:00.000Z',
-      decks: [{ id: 'deck-1', name: 'casa' }],
+      groups: [{ id: 'group-1', name: 'casa' }],
     });
     renderPage();
-    const textarea = await screen.findByRole('textbox', { name: 'New dump' });
+    const textarea = await screen.findByRole('textbox', { name: 'New note' });
 
     await user.type(textarea, 'water the plants @casa{Enter}');
 
-    expect(mockedCreateDump).toHaveBeenCalledWith('water the plants @casa');
+    expect(mockedCreateNote).toHaveBeenCalledWith('water the plants @casa');
     const cards = await findCards();
     expect(cards).toHaveLength(3);
     expect(within(cards[0]!).getByText('water the plants')).toBeInTheDocument();
-    expect(screen.getByText('3 dumps')).toBeInTheDocument();
+    expect(screen.getByText('3 notes')).toBeInTheDocument();
     expect(textarea).toHaveValue('');
-    expect(mockedListDumps).toHaveBeenCalledTimes(1);
+    expect(mockedListNotes).toHaveBeenCalledTimes(1);
   });
 });
 
-describe('DeckDumpsPage create and the deck match', () => {
-  it('matches the page deck ignoring case', async () => {
+describe('GroupNotesPage create and the group match', () => {
+  it('matches the page group ignoring case', async () => {
     const user = userEvent.setup();
-    mockedCreateDump.mockResolvedValue({
-      id: 'dump-3',
+    mockedCreateNote.mockResolvedValue({
+      id: 'note-3',
       content: 'water the plants',
       createdAt: '2026-10-15T10:00:00.000Z',
-      decks: [{ id: 'deck-1', name: 'casa' }],
+      groups: [{ id: 'group-1', name: 'casa' }],
     });
-    renderPage('/deck/Casa');
-    const textarea = await screen.findByRole('textbox', { name: 'New dump' });
+    renderPage('/group/Casa');
+    const textarea = await screen.findByRole('textbox', { name: 'New note' });
 
     await user.type(textarea, 'water the plants @Casa{Enter}');
 
-    expect(mockedCreateDump).toHaveBeenCalledWith('water the plants @Casa');
+    expect(mockedCreateNote).toHaveBeenCalledWith('water the plants @Casa');
     expect(await findCards()).toHaveLength(3);
   });
 
-  it('adds a dump that carries the page deck along with other decks', async () => {
+  it('adds a note that carries the page group along with other groups', async () => {
     const user = userEvent.setup();
-    mockedCreateDump.mockResolvedValue({
-      id: 'dump-3',
+    mockedCreateNote.mockResolvedValue({
+      id: 'note-3',
       content: 'water the plants',
       createdAt: '2026-10-15T10:00:00.000Z',
-      decks: [
-        { id: 'deck-9', name: 'outra' },
-        { id: 'deck-1', name: 'casa' },
+      groups: [
+        { id: 'group-9', name: 'outra' },
+        { id: 'group-1', name: 'casa' },
       ],
     });
     renderPage();
-    const textarea = await screen.findByRole('textbox', { name: 'New dump' });
+    const textarea = await screen.findByRole('textbox', { name: 'New note' });
 
     await user.clear(textarea);
     await user.type(textarea, 'water the plants @outra @casa{Enter}');
@@ -218,32 +218,32 @@ describe('DeckDumpsPage create and the deck match', () => {
     expect(within(cards[0]!).getByText('water the plants')).toBeInTheDocument();
   });
 
-  it('leaves the list alone when the saved dump carries another deck', async () => {
+  it('leaves the list alone when the saved note carries another group', async () => {
     const user = userEvent.setup();
-    mockedCreateDump.mockResolvedValue({
-      id: 'dump-3',
+    mockedCreateNote.mockResolvedValue({
+      id: 'note-3',
       content: 'water the plants',
       createdAt: '2026-10-15T10:00:00.000Z',
-      decks: [{ id: 'deck-9', name: 'outra' }],
+      groups: [{ id: 'group-9', name: 'outra' }],
     });
     renderPage();
-    const textarea = await screen.findByRole('textbox', { name: 'New dump' });
+    const textarea = await screen.findByRole('textbox', { name: 'New note' });
 
     await user.clear(textarea);
     await user.type(textarea, 'water the plants @outra{Enter}');
 
-    await waitFor(() => expect(mockedCreateDump).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockedCreateNote).toHaveBeenCalledTimes(1));
     expect(await findCards()).toHaveLength(2);
-    expect(screen.getByText('2 dumps')).toBeInTheDocument();
+    expect(screen.getByText('2 notes')).toBeInTheDocument();
   });
 });
 
-describe('DeckDumpsPage create errors', () => {
+describe('GroupNotesPage create errors', () => {
   it('shows the composer error and keeps the draft when saving fails', async () => {
     const user = userEvent.setup();
-    mockedCreateDump.mockRejectedValue(new Error('Database is down'));
+    mockedCreateNote.mockRejectedValue(new Error('Database is down'));
     renderPage();
-    const textarea = await screen.findByRole('textbox', { name: 'New dump' });
+    const textarea = await screen.findByRole('textbox', { name: 'New note' });
 
     await user.type(textarea, 'water the plants @casa{Enter}');
 
@@ -254,77 +254,77 @@ describe('DeckDumpsPage create errors', () => {
   });
 });
 
-describe('DeckDumpsPage edit', () => {
-  it('edits a dump inline and keeps the order of the list', async () => {
+describe('GroupNotesPage edit', () => {
+  it('edits a note inline and keeps the order of the list', async () => {
     const user = userEvent.setup();
-    mockedUpdateDump.mockResolvedValue({
-      id: 'dump-1',
+    mockedUpdateNote.mockResolvedValue({
+      id: 'note-1',
       content: 'buy tea',
       createdAt: '2026-10-14T12:00:00.000Z',
-      decks: [{ id: 'deck-1', name: 'casa' }],
+      groups: [{ id: 'group-1', name: 'casa' }],
     });
     renderPage();
     const [first] = await findCards();
     const editButton = within(first!).getByRole('button', {
-      name: 'Edit dump',
+      name: 'Edit note',
     });
     expect(editButton.querySelector('svg')).not.toBeNull();
 
     await user.click(editButton);
-    const editor = within(first!).getByRole('textbox', { name: 'Edit dump' });
+    const editor = within(first!).getByRole('textbox', { name: 'Edit note' });
     expect(editor).toHaveValue('buy coffee');
 
     await user.clear(editor);
     await user.type(editor, 'buy tea @casa');
     await user.click(within(first!).getByRole('button', { name: 'Save' }));
 
-    expect(mockedUpdateDump).toHaveBeenCalledWith('dump-1', 'buy tea @casa');
+    expect(mockedUpdateNote).toHaveBeenCalledWith('note-1', 'buy tea @casa');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     const cards = await findCards();
     expect(cards).toHaveLength(2);
     expect(within(cards[0]!).getByText('buy tea')).toBeInTheDocument();
     expect(within(cards[1]!).getByText('fix the sink')).toBeInTheDocument();
     expect(
-      screen.queryByRole('textbox', { name: 'Edit dump' }),
+      screen.queryByRole('textbox', { name: 'Edit note' }),
     ).not.toBeInTheDocument();
   });
 
   it('saves with Enter, trimming the content', async () => {
     const user = userEvent.setup();
-    mockedUpdateDump.mockResolvedValue({
-      id: 'dump-1',
+    mockedUpdateNote.mockResolvedValue({
+      id: 'note-1',
       content: 'buy tea',
       createdAt: '2026-10-14T12:00:00.000Z',
-      decks: [{ id: 'deck-1', name: 'casa' }],
+      groups: [{ id: 'group-1', name: 'casa' }],
     });
     renderPage();
     const [first] = await findCards();
 
-    await user.click(within(first!).getByRole('button', { name: 'Edit dump' }));
-    const editor = within(first!).getByRole('textbox', { name: 'Edit dump' });
+    await user.click(within(first!).getByRole('button', { name: 'Edit note' }));
+    const editor = within(first!).getByRole('textbox', { name: 'Edit note' });
     await user.clear(editor);
     await user.type(editor, 'buy tea @casa {Enter}');
 
-    expect(mockedUpdateDump).toHaveBeenCalledWith('dump-1', 'buy tea @casa');
+    expect(mockedUpdateNote).toHaveBeenCalledWith('note-1', 'buy tea @casa');
     expect(await screen.findByText('buy tea')).toBeInTheDocument();
   });
 });
 
-describe('DeckDumpsPage edit cancelling', () => {
+describe('GroupNotesPage edit cancelling', () => {
   it('cancels the edit on Escape without calling the API', async () => {
     const user = userEvent.setup();
     renderPage();
     const [first] = await findCards();
 
-    await user.click(within(first!).getByRole('button', { name: 'Edit dump' }));
-    const editor = within(first!).getByRole('textbox', { name: 'Edit dump' });
+    await user.click(within(first!).getByRole('button', { name: 'Edit note' }));
+    const editor = within(first!).getByRole('textbox', { name: 'Edit note' });
     await user.clear(editor);
     await user.type(editor, 'throw this away{Escape}');
 
-    expect(mockedUpdateDump).not.toHaveBeenCalled();
+    expect(mockedUpdateNote).not.toHaveBeenCalled();
     expect(within(first!).getByText('buy coffee')).toBeInTheDocument();
     expect(
-      screen.queryByRole('textbox', { name: 'Edit dump' }),
+      screen.queryByRole('textbox', { name: 'Edit note' }),
     ).not.toBeInTheDocument();
   });
 
@@ -333,32 +333,32 @@ describe('DeckDumpsPage edit cancelling', () => {
     renderPage();
     const [first] = await findCards();
 
-    await user.click(within(first!).getByRole('button', { name: 'Edit dump' }));
+    await user.click(within(first!).getByRole('button', { name: 'Edit note' }));
     await user.click(within(first!).getByRole('button', { name: 'Cancel' }));
 
-    expect(mockedUpdateDump).not.toHaveBeenCalled();
+    expect(mockedUpdateNote).not.toHaveBeenCalled();
     expect(within(first!).getByText('buy coffee')).toBeInTheDocument();
   });
 });
 
-describe('DeckDumpsPage edit and the deck match', () => {
-  it('drops the dump from the list when the deck leaves the content', async () => {
+describe('GroupNotesPage edit and the group match', () => {
+  it('drops the note from the list when the group leaves the content', async () => {
     const user = userEvent.setup();
-    mockedUpdateDump.mockResolvedValue({
-      id: 'dump-1',
+    mockedUpdateNote.mockResolvedValue({
+      id: 'note-1',
       content: 'buy tea',
       createdAt: '2026-10-14T12:00:00.000Z',
-      decks: [{ id: 'deck-9', name: 'outra' }],
+      groups: [{ id: 'group-9', name: 'outra' }],
     });
     renderPage();
     const [first] = await findCards();
 
-    await user.click(within(first!).getByRole('button', { name: 'Edit dump' }));
-    const editor = within(first!).getByRole('textbox', { name: 'Edit dump' });
+    await user.click(within(first!).getByRole('button', { name: 'Edit note' }));
+    const editor = within(first!).getByRole('textbox', { name: 'Edit note' });
     await user.clear(editor);
     await user.type(editor, 'buy tea @outra{Enter}');
 
-    expect(await screen.findByText('1 dump')).toBeInTheDocument();
+    expect(await screen.findByText('1 note')).toBeInTheDocument();
     expect(screen.queryByText('buy tea')).not.toBeInTheDocument();
     const cards = await findCards();
     expect(cards).toHaveLength(1);
@@ -367,15 +367,15 @@ describe('DeckDumpsPage edit and the deck match', () => {
   });
 });
 
-describe('DeckDumpsPage edit errors', () => {
+describe('GroupNotesPage edit errors', () => {
   it('shows the API error inside the card and keeps the draft', async () => {
     const user = userEvent.setup();
-    mockedUpdateDump.mockRejectedValue(new Error('Database is down'));
+    mockedUpdateNote.mockRejectedValue(new Error('Database is down'));
     renderPage();
     const [first] = await findCards();
 
-    await user.click(within(first!).getByRole('button', { name: 'Edit dump' }));
-    const editor = within(first!).getByRole('textbox', { name: 'Edit dump' });
+    await user.click(within(first!).getByRole('button', { name: 'Edit note' }));
+    const editor = within(first!).getByRole('textbox', { name: 'Edit note' });
     await user.clear(editor);
     await user.type(editor, 'buy tea @casa{Enter}');
 
@@ -383,73 +383,73 @@ describe('DeckDumpsPage edit errors', () => {
       'Database is down',
     );
     expect(
-      within(first!).getByRole('textbox', { name: 'Edit dump' }),
+      within(first!).getByRole('textbox', { name: 'Edit note' }),
     ).toHaveValue('buy tea @casa');
-    expect(screen.getByText('2 dumps')).toBeInTheDocument();
+    expect(screen.getByText('2 notes')).toBeInTheDocument();
   });
 
   it('falls back to a generic message when the update fails without an error', async () => {
     const user = userEvent.setup();
-    mockedUpdateDump.mockRejectedValue('boom');
+    mockedUpdateNote.mockRejectedValue('boom');
     renderPage();
     const [first] = await findCards();
 
-    await user.click(within(first!).getByRole('button', { name: 'Edit dump' }));
+    await user.click(within(first!).getByRole('button', { name: 'Edit note' }));
     await user.click(within(first!).getByRole('button', { name: 'Save' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Could not update the dump',
+      'Could not update the note',
     );
   });
 });
 
-describe('DeckDumpsPage delete', () => {
+describe('GroupNotesPage delete', () => {
   it('asks for confirmation before deleting', async () => {
     const user = userEvent.setup();
     renderPage();
     const [first] = await findCards();
 
     const deleteButton = within(first!).getByRole('button', {
-      name: 'Delete dump',
+      name: 'Delete note',
     });
     expect(deleteButton.querySelector('svg')).not.toBeNull();
 
     await user.click(deleteButton);
 
-    expect(mockedDeleteDump).not.toHaveBeenCalled();
+    expect(mockedDeleteNote).not.toHaveBeenCalled();
     expect(
       within(first!).getByRole('button', { name: 'Confirm delete' }),
     ).toBeInTheDocument();
   });
 
-  it('deletes the dump on the second click', async () => {
+  it('deletes the note on the second click', async () => {
     const user = userEvent.setup();
     renderPage();
     const [first] = await findCards();
 
     await user.click(
-      within(first!).getByRole('button', { name: 'Delete dump' }),
+      within(first!).getByRole('button', { name: 'Delete note' }),
     );
     await user.click(
       within(first!).getByRole('button', { name: 'Confirm delete' }),
     );
 
-    expect(mockedDeleteDump).toHaveBeenCalledWith('dump-1');
-    expect(await screen.findByText('1 dump')).toBeInTheDocument();
+    expect(mockedDeleteNote).toHaveBeenCalledWith('note-1');
+    expect(await screen.findByText('1 note')).toBeInTheDocument();
     expect(screen.queryByText('buy coffee')).not.toBeInTheDocument();
-    expect(mockedListDumps).toHaveBeenCalledTimes(1);
+    expect(mockedListNotes).toHaveBeenCalledTimes(1);
   });
 
-  it('drops the confirmation when the focus moves to another dump', async () => {
+  it('drops the confirmation when the focus moves to another note', async () => {
     const user = userEvent.setup();
     renderPage();
     const [first, second] = await findCards();
 
     await user.click(
-      within(first!).getByRole('button', { name: 'Delete dump' }),
+      within(first!).getByRole('button', { name: 'Delete note' }),
     );
     await user.click(
-      within(second!).getByRole('button', { name: 'Delete dump' }),
+      within(second!).getByRole('button', { name: 'Delete note' }),
     );
 
     expect(
@@ -461,45 +461,45 @@ describe('DeckDumpsPage delete', () => {
   });
 });
 
-describe('DeckDumpsPage delete errors', () => {
-  it('keeps the dump and shows the API error when the delete fails', async () => {
+describe('GroupNotesPage delete errors', () => {
+  it('keeps the note and shows the API error when the delete fails', async () => {
     const user = userEvent.setup();
-    mockedDeleteDump.mockRejectedValue(new Error('Dump not found'));
+    mockedDeleteNote.mockRejectedValue(new Error('Note not found'));
     renderPage();
     const [first] = await findCards();
 
     await user.click(
-      within(first!).getByRole('button', { name: 'Delete dump' }),
+      within(first!).getByRole('button', { name: 'Delete note' }),
     );
     await user.click(
       within(first!).getByRole('button', { name: 'Confirm delete' }),
     );
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Dump not found',
+      'Note not found',
     );
     expect(within(first!).getByText('buy coffee')).toBeInTheDocument();
     expect(
-      within(first!).getByRole('button', { name: 'Delete dump' }),
+      within(first!).getByRole('button', { name: 'Delete note' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('2 dumps')).toBeInTheDocument();
+    expect(screen.getByText('2 notes')).toBeInTheDocument();
   });
 
   it('falls back to a generic message when the delete fails without an error', async () => {
     const user = userEvent.setup();
-    mockedDeleteDump.mockRejectedValue('boom');
+    mockedDeleteNote.mockRejectedValue('boom');
     renderPage();
     const [first] = await findCards();
 
     await user.click(
-      within(first!).getByRole('button', { name: 'Delete dump' }),
+      within(first!).getByRole('button', { name: 'Delete note' }),
     );
     await user.click(
       within(first!).getByRole('button', { name: 'Confirm delete' }),
     );
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Could not delete the dump',
+      'Could not delete the note',
     );
   });
 });

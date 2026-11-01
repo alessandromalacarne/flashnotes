@@ -117,11 +117,11 @@ describe('signing out', () => {
 });
 
 describe('protecting the app routes', () => {
-  it('refuses dumps without a session', async () => {
-    await request(app.getHttpServer()).get('/dumps').expect(401);
+  it('refuses notes without a session', async () => {
+    await request(app.getHttpServer()).get('/notes').expect(401);
   });
 
-  it('serves dumps to a signed-in browser', async () => {
+  it('serves notes to a signed-in browser', async () => {
     const agent = request.agent(app.getHttpServer());
     await agent
       .post('/auth/sign-up')
@@ -129,7 +129,7 @@ describe('protecting the app routes', () => {
       .expect(201);
 
     await agent
-      .post('/dumps')
+      .post('/notes')
       .send({ content: 'buy coffee @casa' })
       .expect(201);
   });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Dump } from '../api';
+import type { Note } from '../api';
 
 const dateFormat = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
@@ -51,8 +51,8 @@ function TrashIcon() {
   );
 }
 
-interface DumpCardProps {
-  dump: Dump;
+interface NoteCardProps {
+  note: Note;
   onUpdate: (id: string, content: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
@@ -61,15 +61,15 @@ function failureOf(cause: unknown, fallback: string): string {
   return cause instanceof Error ? cause.message : fallback;
 }
 
-function useDumpEditor({ dump, onUpdate, onDelete }: DumpCardProps) {
-  const [draft, setDraft] = useState(dump.content);
+function useNoteEditor({ note, onUpdate, onDelete }: NoteCardProps) {
+  const [draft, setDraft] = useState(note.content);
   const [editing, setEditing] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function startEditing() {
-    setDraft(dump.content);
+    setDraft(note.content);
     setError(null);
     setEditing(true);
   }
@@ -90,10 +90,10 @@ function useDumpEditor({ dump, onUpdate, onDelete }: DumpCardProps) {
     setError(null);
     setBusy(true);
     try {
-      await onUpdate(dump.id, draft.trim());
+      await onUpdate(note.id, draft.trim());
       setEditing(false);
     } catch (cause) {
-      setError(failureOf(cause, 'Could not update the dump'));
+      setError(failureOf(cause, 'Could not update the note'));
     } finally {
       setBusy(false);
     }
@@ -103,10 +103,10 @@ function useDumpEditor({ dump, onUpdate, onDelete }: DumpCardProps) {
     setError(null);
     setBusy(true);
     try {
-      await onDelete(dump.id);
+      await onDelete(note.id);
     } catch (cause) {
       setConfirming(false);
-      setError(failureOf(cause, 'Could not delete the dump'));
+      setError(failureOf(cause, 'Could not delete the note'));
       setBusy(false);
     }
   }
@@ -145,7 +145,7 @@ function EditForm({
         autoFocus
         rows={3}
         disabled={busy}
-        aria-label="Edit dump"
+        aria-label="Edit note"
         value={draft}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={(event) => {
@@ -182,7 +182,7 @@ function EditForm({
   );
 }
 
-function DumpActions({
+function NoteActions({
   busy,
   confirming,
   onEdit,
@@ -200,7 +200,7 @@ function DumpActions({
       <button
         type="button"
         onClick={onEdit}
-        aria-label="Edit dump"
+        aria-label="Edit note"
         className={`${iconButtonClass} hover:text-ink`}
       >
         <PencilIcon />
@@ -221,7 +221,7 @@ function DumpActions({
         <button
           type="button"
           onClick={() => onConfirming(true)}
-          aria-label="Delete dump"
+          aria-label="Delete note"
           className={`${iconButtonClass} hover:text-danger`}
         >
           <TrashIcon />
@@ -231,8 +231,8 @@ function DumpActions({
   );
 }
 
-export function DumpCard({ dump, onUpdate, onDelete }: DumpCardProps) {
-  const editor = useDumpEditor({ dump, onUpdate, onDelete });
+export function NoteCard({ note, onUpdate, onDelete }: NoteCardProps) {
+  const editor = useNoteEditor({ note, onUpdate, onDelete });
 
   return (
     <li className="group rounded-2xl border border-line bg-surface-raised p-5">
@@ -246,7 +246,7 @@ export function DumpCard({ dump, onUpdate, onDelete }: DumpCardProps) {
         />
       ) : (
         <p className="whitespace-pre-wrap leading-relaxed text-ink">
-          {dump.content}
+          {note.content}
         </p>
       )}
 
@@ -257,22 +257,22 @@ export function DumpCard({ dump, onUpdate, onDelete }: DumpCardProps) {
       ) : null}
 
       <footer className="mt-3 flex flex-wrap items-center gap-2">
-        {dump.decks.map((deck) => (
+        {note.groups.map((group) => (
           <span
-            key={deck.id}
+            key={group.id}
             className="rounded-full bg-paper px-2.5 py-1 text-xs text-ink-soft"
           >
-            @{deck.name}
+            @{group.name}
           </span>
         ))}
 
         <div className="ml-auto flex items-center gap-1">
-          <time dateTime={dump.createdAt} className="text-xs text-ink-faint">
-            {dateFormat.format(new Date(dump.createdAt))}
+          <time dateTime={note.createdAt} className="text-xs text-ink-faint">
+            {dateFormat.format(new Date(note.createdAt))}
           </time>
 
           {editor.editing ? null : (
-            <DumpActions
+            <NoteActions
               busy={editor.busy}
               confirming={editor.confirming}
               onEdit={editor.startEditing}

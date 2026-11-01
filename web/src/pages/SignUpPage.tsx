@@ -11,7 +11,7 @@ export function SignUpPage() {
 
   return (
     <AuthShell
-      title="Create your quickdump"
+      title="Create your flashnotes"
       subtitle="One account, one place for every loose thought."
     >
       <AuthForm

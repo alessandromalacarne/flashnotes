@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AuthenticationModule } from '@nestjs/authentication';
 import { AuthModule } from './auth/auth.module.js';
-import { DecksModule } from './decks/decks.module.js';
-import { DumpsModule } from './dumps/dumps.module.js';
+import { GroupsModule } from './groups/groups.module.js';
+import { NotesModule } from './notes/notes.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
 @Module({
@@ -16,8 +16,8 @@ import { PrismaModule } from './prisma/prisma.module.js';
     }),
     PrismaModule,
     AuthModule,
-    DumpsModule,
-    DecksModule,
+    NotesModule,
+    GroupsModule,
   ],
 })
 export class AppModule {}

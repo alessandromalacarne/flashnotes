@@ -3,25 +3,25 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
-import { createDump, getCurrentUser, listDumps, listDecks } from './api';
+import { createNote, getCurrentUser, listNotes, listGroups } from './api';
 
 vi.mock('./api', () => ({
-  createDump: vi.fn(),
-  deleteDump: vi.fn(),
-  deleteDeck: vi.fn(),
+  createNote: vi.fn(),
+  deleteNote: vi.fn(),
+  deleteGroup: vi.fn(),
   getCurrentUser: vi.fn(),
-  listDumps: vi.fn(),
-  listDecks: vi.fn(),
+  listNotes: vi.fn(),
+  listGroups: vi.fn(),
   signIn: vi.fn(),
   signOut: vi.fn(),
   signUp: vi.fn(),
-  updateDump: vi.fn(),
+  updateNote: vi.fn(),
 }));
 
-const mockedCreateDump = vi.mocked(createDump);
+const mockedCreateNote = vi.mocked(createNote);
 const mockedGetCurrentUser = vi.mocked(getCurrentUser);
-const mockedListDumps = vi.mocked(listDumps);
-const mockedListDecks = vi.mocked(listDecks);
+const mockedListNotes = vi.mocked(listNotes);
+const mockedListGroups = vi.mocked(listGroups);
 
 const ana = { id: 'user-1', email: 'ana@example.com' };
 
@@ -33,28 +33,28 @@ function renderApp(path = '/app') {
   );
 }
 
-const casaDump = {
-  id: 'dump-1',
+const casaNote = {
+  id: 'note-1',
   content: 'buy coffee',
   createdAt: '2026-10-10T12:00:00.000Z',
-  decks: [{ id: 'deck-1', name: 'casa' }],
+  groups: [{ id: 'group-1', name: 'casa' }],
 };
 
 beforeEach(() => {
   vi.clearAllMocks();
   mockedGetCurrentUser.mockResolvedValue(ana);
-  mockedCreateDump.mockResolvedValue({
-    id: 'dump-1',
+  mockedCreateNote.mockResolvedValue({
+    id: 'note-1',
     content: 'buy coffee',
     createdAt: '2026-10-10T12:00:00.000Z',
-    decks: [{ id: 'deck-1', name: 'casa' }],
+    groups: [{ id: 'group-1', name: 'casa' }],
   });
-  mockedListDumps.mockResolvedValue([]);
-  mockedListDecks.mockResolvedValue([]);
+  mockedListNotes.mockResolvedValue([]);
+  mockedListGroups.mockResolvedValue([]);
 });
 
 describe('landing page', () => {
-  it('presents quickdump at the root with the signup path', async () => {
+  it('presents flashnotes at the root with the signup path', async () => {
     renderApp('/');
 
     expect(
@@ -70,17 +70,17 @@ describe('composer', () => {
   it('opens with the composer focused', async () => {
     renderApp();
 
-    expect(await screen.findByRole('textbox', { name: /dump/i })).toHaveFocus();
+    expect(await screen.findByRole('textbox', { name: /note/i })).toHaveFocus();
   });
 
   it('sends with Enter, clears the field and confirms', async () => {
     const user = userEvent.setup();
     renderApp();
-    const textarea = await screen.findByRole('textbox', { name: /dump/i });
+    const textarea = await screen.findByRole('textbox', { name: /note/i });
 
     await user.type(textarea, 'buy coffee @casa{Enter}');
 
-    expect(mockedCreateDump).toHaveBeenCalledWith('buy coffee @casa');
+    expect(mockedCreateNote).toHaveBeenCalledWith('buy coffee @casa');
     expect(textarea).toHaveValue('');
     expect(await screen.findByText(/saved/i)).toBeInTheDocument();
   });
@@ -88,18 +88,18 @@ describe('composer', () => {
   it('Shift+Enter breaks the line instead of sending', async () => {
     const user = userEvent.setup();
     renderApp();
-    const textarea = await screen.findByRole('textbox', { name: /dump/i });
+    const textarea = await screen.findByRole('textbox', { name: /note/i });
 
     await user.type(textarea, 'line one{Shift>}{Enter}{/Shift}line two @casa');
 
-    expect(mockedCreateDump).not.toHaveBeenCalled();
+    expect(mockedCreateNote).not.toHaveBeenCalled();
     expect(textarea).toHaveValue('line one\nline two @casa');
   });
 
   it('clicking anywhere on the block focuses the field', async () => {
     const user = userEvent.setup();
     renderApp();
-    const textarea = await screen.findByRole('textbox', { name: /dump/i });
+    const textarea = await screen.findByRole('textbox', { name: /note/i });
     textarea.blur();
 
     await user.click(screen.getByText(/enter sends/i));
@@ -109,37 +109,37 @@ describe('composer', () => {
 });
 
 describe('composer errors', () => {
-  it('warns when the deck is missing and does not call the API', async () => {
+  it('warns when the group is missing and does not call the API', async () => {
     const user = userEvent.setup();
     renderApp();
-    const textarea = await screen.findByRole('textbox', { name: /dump/i });
+    const textarea = await screen.findByRole('textbox', { name: /note/i });
 
-    await user.type(textarea, 'text without a deck{Enter}');
+    await user.type(textarea, 'text without a group{Enter}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Include at least one @deck in the dump',
+      'Include at least one @group in the note',
     );
-    expect(mockedCreateDump).not.toHaveBeenCalled();
+    expect(mockedCreateNote).not.toHaveBeenCalled();
   });
 
-  it('warns when the deck is not at the end and does not call the API', async () => {
+  it('warns when the group is not at the end and does not call the API', async () => {
     const user = userEvent.setup();
     renderApp();
-    const textarea = await screen.findByRole('textbox', { name: /dump/i });
+    const textarea = await screen.findByRole('textbox', { name: /note/i });
 
     await user.type(textarea, 'varrer @casa o chão{Enter}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Include at least one @deck in the dump',
+      'Include at least one @group in the note',
     );
-    expect(mockedCreateDump).not.toHaveBeenCalled();
+    expect(mockedCreateNote).not.toHaveBeenCalled();
   });
 
   it('API error keeps the text and shows the message', async () => {
     const user = userEvent.setup();
-    mockedCreateDump.mockRejectedValue(new Error('Database is down'));
+    mockedCreateNote.mockRejectedValue(new Error('Database is down'));
     renderApp();
-    const textarea = await screen.findByRole('textbox', { name: /dump/i });
+    const textarea = await screen.findByRole('textbox', { name: /note/i });
 
     await user.type(textarea, 'algo @casa{Enter}');
 
@@ -150,54 +150,54 @@ describe('composer errors', () => {
   });
 });
 
-describe('deck pages', () => {
-  it('opens the decks page straight from the URL', async () => {
-    mockedListDecks.mockResolvedValue([
-      { id: 'deck-1', name: 'casa', count: 2 },
+describe('group pages', () => {
+  it('opens the groups page straight from the URL', async () => {
+    mockedListGroups.mockResolvedValue([
+      { id: 'group-1', name: 'casa', count: 2 },
     ]);
-    renderApp('/app/decks');
+    renderApp('/app/groups');
 
     expect(
       await screen.findByRole('listitem', { name: /casa/ }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('textbox', { name: /dump/i }),
+      screen.queryByRole('textbox', { name: /note/i }),
     ).not.toBeInTheDocument();
   });
 
-  it('opens a deck page straight from the URL', async () => {
-    mockedListDumps.mockResolvedValue([casaDump]);
-    renderApp('/app/deck/casa');
+  it('opens a group page straight from the URL', async () => {
+    mockedListNotes.mockResolvedValue([casaNote]);
+    renderApp('/app/group/casa');
 
     expect(await screen.findByText('buy coffee')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'New dump' })).toHaveValue('');
+    expect(screen.getByRole('textbox', { name: 'New note' })).toHaveValue('');
   });
 
-  it('opens the dumps of a deck clicked on the decks page', async () => {
+  it('opens the notes of a group clicked on the groups page', async () => {
     const user = userEvent.setup();
-    mockedListDecks.mockResolvedValue([
-      { id: 'deck-1', name: 'casa', count: 2 },
+    mockedListGroups.mockResolvedValue([
+      { id: 'group-1', name: 'casa', count: 2 },
     ]);
-    mockedListDumps.mockResolvedValue([casaDump]);
-    renderApp('/app/decks');
+    mockedListNotes.mockResolvedValue([casaNote]);
+    renderApp('/app/groups');
 
     await user.click(await screen.findByRole('link', { name: /@casa/ }));
 
-    expect(mockedListDumps).toHaveBeenCalledWith('casa');
+    expect(mockedListNotes).toHaveBeenCalledWith('casa');
     expect(await screen.findByText('buy coffee')).toBeInTheDocument();
   });
 });
 
 describe('navigation', () => {
-  it('navigates between the composer and the decks page', async () => {
+  it('navigates between the composer and the groups page', async () => {
     const user = userEvent.setup();
-    mockedListDecks.mockResolvedValue([
-      { id: 'deck-1', name: 'casa', count: 2 },
+    mockedListGroups.mockResolvedValue([
+      { id: 'group-1', name: 'casa', count: 2 },
     ]);
     renderApp();
 
-    const decksLink = await screen.findByRole('link', { name: 'decks' });
-    const dumpLink = screen.getByRole('link', { name: 'dump' });
+    const decksLink = await screen.findByRole('link', { name: 'groups' });
+    const dumpLink = screen.getByRole('link', { name: 'note' });
     expect(dumpLink.className).toContain('text-ink');
     expect(decksLink.className).toContain('text-ink-faint');
 
@@ -206,33 +206,33 @@ describe('navigation', () => {
     expect(
       await screen.findByRole('listitem', { name: /casa/ }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'decks' }).className).toContain(
+    expect(screen.getByRole('link', { name: 'groups' }).className).toContain(
       'text-ink',
     );
-    expect(screen.getByRole('link', { name: 'dump' }).className).toContain(
+    expect(screen.getByRole('link', { name: 'note' }).className).toContain(
       'text-ink-faint',
     );
 
-    await user.click(screen.getByRole('link', { name: 'dump' }));
+    await user.click(screen.getByRole('link', { name: 'note' }));
 
     expect(
-      await screen.findByRole('textbox', { name: /dump/i }),
+      await screen.findByRole('textbox', { name: /note/i }),
     ).toBeInTheDocument();
   });
 
-  it('keeps the decks link highlighted on a deck page', async () => {
-    mockedListDumps.mockResolvedValue([casaDump]);
-    renderApp('/app/deck/casa');
+  it('keeps the groups link highlighted on a group page', async () => {
+    mockedListNotes.mockResolvedValue([casaNote]);
+    renderApp('/app/group/casa');
 
     await screen.findByText('buy coffee');
 
     expect(
       screen
-        .getByRole('link', { name: 'decks' })
+        .getByRole('link', { name: 'groups' })
         .classList.contains('text-ink'),
     ).toBe(true);
     expect(
-      screen.getByRole('link', { name: 'dump' }).classList.contains('text-ink'),
+      screen.getByRole('link', { name: 'note' }).classList.contains('text-ink'),
     ).toBe(false);
   });
 });

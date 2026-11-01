@@ -3,9 +3,9 @@ import { AuthProvider } from './auth/AuthProvider';
 import { PublicOnly } from './auth/PublicOnly';
 import { RequireAuth } from './auth/RequireAuth';
 import { AppShell } from './components/AppShell';
-import { DeckDumpsPage } from './pages/DeckDumpsPage';
-import { DecksPage } from './pages/DecksPage';
-import { DumpPage } from './pages/DumpPage';
+import { GroupNotesPage } from './pages/GroupNotesPage';
+import { GroupsPage } from './pages/GroupsPage';
+import { NotePage } from './pages/NotePage';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignUpPage } from './pages/SignUpPage';
@@ -39,9 +39,9 @@ function App() {
             </RequireAuth>
           }
         >
-          <Route index element={<DumpPage />} />
-          <Route path="decks" element={<DecksPage />} />
-          <Route path="deck/:deck" element={<DeckDumpsPage />} />
+          <Route index element={<NotePage />} />
+          <Route path="groups" element={<GroupsPage />} />
+          <Route path="group/:group" element={<GroupNotesPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

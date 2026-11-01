@@ -12,8 +12,8 @@ export function LoginPage() {
 
   return (
     <AuthShell
-      title="Sign in to quickdump"
-      subtitle="Your dumps are one keystroke away."
+      title="Sign in to flashnotes"
+      subtitle="Your notes are one keystroke away."
     >
       <AuthForm
         submitLabel="Sign in"

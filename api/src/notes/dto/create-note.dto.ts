@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateDumpDto {
+export class CreateNoteDto {
   @IsString()
   @IsNotEmpty()
   content!: string;

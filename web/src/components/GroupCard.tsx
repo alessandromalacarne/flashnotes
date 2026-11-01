@@ -1,8 +1,8 @@
 import { Link } from 'react-router';
-import type { DeckWithCount } from '../api';
+import type { GroupWithCount } from '../api';
 
-interface DeckCardProps {
-  deck: DeckWithCount;
+interface GroupCardProps {
+  group: GroupWithCount;
   onDelete: (id: string) => void;
 }
 
@@ -25,21 +25,21 @@ function TrashIcon() {
   );
 }
 
-export function DeckCard({ deck, onDelete }: DeckCardProps) {
-  const dumps = deck.count === 1 ? '1 dump' : `${deck.count} dumps`;
+export function GroupCard({ group, onDelete }: GroupCardProps) {
+  const notes = group.count === 1 ? '1 note' : `${group.count} notes`;
 
   return (
     <li
-      aria-label={`@${deck.name} (${dumps})`}
+      aria-label={`@${group.name} (${notes})`}
       className="group flex w-40 flex-col items-center justify-self-center gap-3 rounded-2xl border border-transparent p-4 transition-colors hover:bg-surface-raised focus-within:bg-surface-raised"
     >
       <Link
-        to={`/app/deck/${encodeURIComponent(deck.name)}`}
+        to={`/app/group/${encodeURIComponent(group.name)}`}
         className="flex flex-col items-center gap-3 rounded-xl"
       >
         <p className="flex flex-col items-center">
-          <span className="font-medium text-ink">@{deck.name}</span>
-          <span className="text-xs text-ink-faint">{dumps}</span>
+          <span className="font-medium text-ink">@{group.name}</span>
+          <span className="text-xs text-ink-faint">{notes}</span>
         </p>
 
         <span
@@ -54,8 +54,8 @@ export function DeckCard({ deck, onDelete }: DeckCardProps) {
 
       <button
         type="button"
-        onClick={() => onDelete(deck.id)}
-        aria-label={`Delete deck @${deck.name}`}
+        onClick={() => onDelete(group.id)}
+        aria-label={`Delete group @${group.name}`}
         className="flex h-10 w-10 items-center justify-center rounded-full text-ink-faint opacity-0 transition-[color,opacity,background-color] hover:bg-paper hover:text-danger focus-visible:opacity-100 group-hover:opacity-100 pointer-coarse:opacity-100"
       >
         <TrashIcon />

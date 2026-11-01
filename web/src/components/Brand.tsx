@@ -12,7 +12,7 @@ export function Brand() {
       >
         #
       </span>
-      quickdump
+      flashnotes
     </Link>
   );
 }

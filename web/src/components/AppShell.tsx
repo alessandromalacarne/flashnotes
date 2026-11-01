@@ -8,8 +8,8 @@ export function AppShell() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const onDeckArea =
-    pathname === '/app/decks' || pathname.startsWith('/app/deck/');
+  const onGroupArea =
+    pathname === '/app/groups' || pathname.startsWith('/app/group/');
 
   async function handleSignOut() {
     await signOut().catch(() => undefined);
@@ -26,13 +26,13 @@ export function AppShell() {
           {user?.email}
         </span>
         <NavLink to="/app" end className={navLinkClass}>
-          dump
+          note
         </NavLink>
         <NavLink
-          to="/app/decks"
-          className={() => navLinkClass({ isActive: onDeckArea })}
+          to="/app/groups"
+          className={() => navLinkClass({ isActive: onGroupArea })}
         >
-          decks
+          groups
         </NavLink>
         <button
           type="button"

@@ -2,50 +2,50 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { deleteDeck, listDecks } from '../api';
-import { DecksPage } from './DecksPage';
+import { deleteGroup, listGroups } from '../api';
+import { GroupsPage } from './GroupsPage';
 
 vi.mock('../api', () => ({
-  listDecks: vi.fn(),
-  deleteDeck: vi.fn(),
+  listGroups: vi.fn(),
+  deleteGroup: vi.fn(),
 }));
 
-const mockedListDecks = vi.mocked(listDecks);
-const mockedDeleteDeck = vi.mocked(deleteDeck);
+const mockedListGroups = vi.mocked(listGroups);
+const mockedDeleteGroup = vi.mocked(deleteGroup);
 
-const decks = [
-  { id: 'deck-1', name: 'casa', count: 3 },
-  { id: 'deck-2', name: 'trabalho', count: 1 },
+const groups = [
+  { id: 'group-1', name: 'casa', count: 3 },
+  { id: 'group-2', name: 'trabalho', count: 1 },
 ];
 
 function renderPage() {
   return render(
     <MemoryRouter>
-      <DecksPage />
+      <GroupsPage />
     </MemoryRouter>,
   );
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockedListDecks.mockResolvedValue(decks);
-  mockedDeleteDeck.mockResolvedValue(undefined);
+  mockedListGroups.mockResolvedValue(groups);
+  mockedDeleteGroup.mockResolvedValue(undefined);
 });
 
-describe('DecksPage', () => {
-  it('lists every deck with its dump count', async () => {
+describe('GroupsPage', () => {
+  it('lists every group with its note count', async () => {
     renderPage();
 
     const casa = await screen.findByRole('listitem', { name: /casa/ });
     expect(within(casa).getByText('@casa')).toBeInTheDocument();
-    expect(within(casa).getByText('3 dumps')).toBeInTheDocument();
+    expect(within(casa).getByText('3 notes')).toBeInTheDocument();
 
     const trabalho = screen.getByRole('listitem', { name: /trabalho/ });
     expect(within(trabalho).getByText('@trabalho')).toBeInTheDocument();
-    expect(within(trabalho).getByText('1 dump')).toBeInTheDocument();
+    expect(within(trabalho).getByText('1 note')).toBeInTheDocument();
   });
 
-  it('shows a loading state before the decks arrive', async () => {
+  it('shows a loading state before the groups arrive', async () => {
     renderPage();
 
     expect(screen.getByRole('status')).toBeInTheDocument();
@@ -53,43 +53,43 @@ describe('DecksPage', () => {
     await screen.findByRole('listitem', { name: /casa/ });
   });
 
-  it('invites you to dump when there are no decks', async () => {
-    mockedListDecks.mockResolvedValue([]);
+  it('invites you to note when there are no groups', async () => {
+    mockedListGroups.mockResolvedValue([]);
     renderPage();
 
-    expect(await screen.findByText(/no decks yet/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /dump/i })).toHaveAttribute(
+    expect(await screen.findByText(/no groups yet/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /note/i })).toHaveAttribute(
       'href',
       '/app',
     );
   });
 });
 
-describe('DecksPage deletion', () => {
-  it('deletes a deck and drops it from the grid', async () => {
+describe('GroupsPage deletion', () => {
+  it('deletes a group and drops it from the grid', async () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByRole('listitem', { name: /casa/ });
 
     const deleteButton = screen.getByRole('button', {
-      name: 'Delete deck @casa',
+      name: 'Delete group @casa',
     });
     expect(deleteButton.querySelector('svg')).not.toBeNull();
 
     await user.click(deleteButton);
 
-    expect(mockedDeleteDeck).toHaveBeenCalledWith('deck-1');
+    expect(mockedDeleteGroup).toHaveBeenCalledWith('group-1');
     expect(
       await screen.findByRole('listitem', { name: /trabalho/ }),
     ).toBeInTheDocument();
     expect(screen.queryByText('@casa')).not.toBeInTheDocument();
-    expect(mockedListDecks).toHaveBeenCalledTimes(1);
+    expect(mockedListGroups).toHaveBeenCalledTimes(1);
   });
 });
 
-describe('DecksPage errors', () => {
-  it('shows the API error when the decks cannot be loaded', async () => {
-    mockedListDecks.mockRejectedValue(new Error('Database is down'));
+describe('GroupsPage errors', () => {
+  it('shows the API error when the groups cannot be loaded', async () => {
+    mockedListGroups.mockRejectedValue(new Error('Database is down'));
     renderPage();
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -97,39 +97,43 @@ describe('DecksPage errors', () => {
     );
   });
 
-  it('keeps the deck and shows the error when deleting fails', async () => {
+  it('keeps the group and shows the error when deleting fails', async () => {
     const user = userEvent.setup();
-    mockedDeleteDeck.mockRejectedValue(new Error('Deck not found'));
+    mockedDeleteGroup.mockRejectedValue(new Error('Group not found'));
     renderPage();
     await screen.findByRole('listitem', { name: /casa/ });
 
-    await user.click(screen.getByRole('button', { name: 'Delete deck @casa' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Delete group @casa' }),
+    );
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Deck not found',
+      'Group not found',
     );
     expect(screen.getByText('@casa')).toBeInTheDocument();
   });
 
   it('falls back to a generic message when loading fails without an error', async () => {
-    mockedListDecks.mockRejectedValue('boom');
+    mockedListGroups.mockRejectedValue('boom');
     renderPage();
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Could not load the decks',
+      'Could not load the groups',
     );
   });
 
   it('falls back to a generic message when deleting fails without an error', async () => {
     const user = userEvent.setup();
-    mockedDeleteDeck.mockRejectedValue('boom');
+    mockedDeleteGroup.mockRejectedValue('boom');
     renderPage();
     await screen.findByRole('listitem', { name: /casa/ });
 
-    await user.click(screen.getByRole('button', { name: 'Delete deck @casa' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Delete group @casa' }),
+    );
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Could not delete the deck',
+      'Could not delete the group',
     );
   });
 });

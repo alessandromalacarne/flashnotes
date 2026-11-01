@@ -1,4 +1,4 @@
-export interface Deck {
+export interface Group {
   id: string;
   name: string;
 }
@@ -8,15 +8,15 @@ export interface User {
   email: string;
 }
 
-export interface DeckWithCount extends Deck {
+export interface GroupWithCount extends Group {
   count: number;
 }
 
-export interface Dump {
+export interface Note {
   id: string;
   content: string;
   createdAt: string;
-  decks: Deck[];
+  groups: Group[];
 }
 
 function errorMessage(body: unknown, status: number): string {
@@ -41,40 +41,42 @@ async function request(path: string, init?: RequestInit): Promise<Response> {
   return response;
 }
 
-export async function createDump(content: string): Promise<Dump> {
-  const response = await request('/api/dumps', {
+export async function createNote(content: string): Promise<Note> {
+  const response = await request('/api/notes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content }),
   });
-  return (await response.json()) as Dump;
+  return (await response.json()) as Note;
 }
 
-export async function listDumps(deck: string): Promise<Dump[]> {
-  const response = await request(`/api/dumps?deck=${encodeURIComponent(deck)}`);
-  return (await response.json()) as Dump[];
+export async function listNotes(group: string): Promise<Note[]> {
+  const response = await request(
+    `/api/notes?group=${encodeURIComponent(group)}`,
+  );
+  return (await response.json()) as Note[];
 }
 
-export async function updateDump(id: string, content: string): Promise<Dump> {
-  const response = await request(`/api/dumps/${encodeURIComponent(id)}`, {
+export async function updateNote(id: string, content: string): Promise<Note> {
+  const response = await request(`/api/notes/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content }),
   });
-  return (await response.json()) as Dump;
+  return (await response.json()) as Note;
 }
 
-export async function deleteDump(id: string): Promise<void> {
-  await request(`/api/dumps/${encodeURIComponent(id)}`, { method: 'DELETE' });
+export async function deleteNote(id: string): Promise<void> {
+  await request(`/api/notes/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
-export async function listDecks(): Promise<DeckWithCount[]> {
-  const response = await request('/api/decks');
-  return (await response.json()) as DeckWithCount[];
+export async function listGroups(): Promise<GroupWithCount[]> {
+  const response = await request('/api/groups');
+  return (await response.json()) as GroupWithCount[];
 }
 
-export async function deleteDeck(id: string): Promise<void> {
-  await request(`/api/decks/${encodeURIComponent(id)}`, { method: 'DELETE' });
+export async function deleteGroup(id: string): Promise<void> {
+  await request(`/api/groups/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
 export async function getCurrentUser(): Promise<User | null> {

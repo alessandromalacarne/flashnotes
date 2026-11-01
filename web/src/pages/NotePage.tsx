@@ -1,15 +1,15 @@
 import { useCallback } from 'react';
-import { createDump } from '../api';
+import { createNote } from '../api';
 import { Composer } from '../components/Composer';
 
-export function DumpPage() {
+export function NotePage() {
   const handleSubmit = useCallback(async (content: string) => {
-    await createDump(content);
+    await createNote(content);
   }, []);
 
   return (
     <>
-      <h1 className="sr-only">quickdump</h1>
+      <h1 className="sr-only">flashnotes</h1>
       <Composer onSubmit={handleSubmit} />
     </>
   );

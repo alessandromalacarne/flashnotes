@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { LandingPage } from './LandingPage';
 
 describe('landing page', () => {
-  it('presents quickdump and the paths into the app', () => {
+  it('presents flashnotes and the paths into the app', () => {
     render(
       <MemoryRouter>
         <LandingPage />

@@ -7,14 +7,14 @@ const primaryLinkClass =
 const ghostLinkClass =
   'inline-flex min-h-12 items-center justify-center rounded-full border border-line px-7 text-ink-soft transition-colors hover:border-ink-faint hover:text-ink';
 
-function DumpPreview() {
+function NotePreview() {
   return (
     <div
       aria-hidden="true"
       className="rounded-2xl border border-line bg-surface p-5 shadow-[0_24px_80px_oklch(0_0_0/0.45)] sm:p-6"
     >
       <div className="flex items-center justify-between text-xs text-ink-faint">
-        <span>new dump</span>
+        <span>new note</span>
         <span className="rounded-full border border-line px-2 py-1">
           autosaved
         </span>
@@ -32,7 +32,7 @@ function DumpPreview() {
       <div className="mt-6 flex items-center gap-2 border-t border-line pt-4 text-sm text-ink-faint">
         <span>Enter sends</span>
         <span className="ml-auto rounded-full bg-mark px-5 py-2 font-semibold text-mark-contrast">
-          Dump
+          Note
         </span>
       </div>
     </div>
@@ -59,17 +59,17 @@ function Hero() {
   return (
     <section>
       <p className="text-xs font-medium tracking-[0.2em] text-mark uppercase">
-        notes · decks · zero friction
+        notes · groups · zero friction
       </p>
       <h1 className="mt-5 text-4xl leading-[1.05] font-semibold tracking-tight text-ink sm:text-6xl">
         Capture thoughts in seconds.
         <span className="mt-2 block text-ink-soft">
-          Retrieve them by deck later.
+          Retrieve them by group later.
         </span>
       </h1>
       <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-        quickdump is a tiny inbox for your brain. Type a thought, end it with a{' '}
-        <code className="text-mark">@deck</code>, hit Enter. Find it later
+        flashnotes is a tiny inbox for your brain. Type a thought, end it with a{' '}
+        <code className="text-mark">@group</code>, hit Enter. Find it later
         without sorting a single folder.
       </p>
 
@@ -105,12 +105,12 @@ function FeatureGrid() {
         The composer is the whole app. One field, one keystroke, and the thought
         is out of your head.
       </FeatureCard>
-      <FeatureCard title="Decks, not folders">
-        End a dump with @casa or @trabalho. One thought can land in more than
-        one deck at once.
+      <FeatureCard title="Groups, not folders">
+        End a note with @casa or @trabalho. One thought can land in more than
+        one group at once.
       </FeatureCard>
       <FeatureCard title="Plain text that lasts">
-        Bodies are stored without the markers. Export a deck when you are ready
+        Bodies are stored without the markers. Export a group when you are ready
         to turn notes into writing.
       </FeatureCard>
     </ul>
@@ -121,7 +121,7 @@ function LandingFooter() {
   return (
     <footer className="border-t border-line/70">
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-3 px-5 py-6 text-xs text-ink-faint sm:px-8">
-        <p>quickdump — capture now, sort later.</p>
+        <p>flashnotes — capture now, sort later.</p>
         <p className="ml-auto">built for people who think in fragments.</p>
       </div>
     </footer>
@@ -141,7 +141,7 @@ export function LandingPage() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-16">
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
           <Hero />
-          <DumpPreview />
+          <NotePreview />
         </div>
 
         <FeatureGrid />

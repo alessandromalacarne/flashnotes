@@ -4,32 +4,32 @@ import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
 import {
-  createDump,
+  createNote,
   getCurrentUser,
-  listDecks,
-  listDumps,
+  listGroups,
+  listNotes,
   signIn,
   signOut,
   signUp,
 } from '../api';
 
 vi.mock('../api', () => ({
-  createDump: vi.fn(),
-  deleteDump: vi.fn(),
-  deleteDeck: vi.fn(),
+  createNote: vi.fn(),
+  deleteNote: vi.fn(),
+  deleteGroup: vi.fn(),
   getCurrentUser: vi.fn(),
-  listDumps: vi.fn(),
-  listDecks: vi.fn(),
+  listNotes: vi.fn(),
+  listGroups: vi.fn(),
   signIn: vi.fn(),
   signOut: vi.fn(),
   signUp: vi.fn(),
-  updateDump: vi.fn(),
+  updateNote: vi.fn(),
 }));
 
 const mockedGetCurrentUser = vi.mocked(getCurrentUser);
-const mockedCreateDump = vi.mocked(createDump);
-const mockedListDumps = vi.mocked(listDumps);
-const mockedListDecks = vi.mocked(listDecks);
+const mockedCreateNote = vi.mocked(createNote);
+const mockedListNotes = vi.mocked(listNotes);
+const mockedListGroups = vi.mocked(listGroups);
 const mockedSignIn = vi.mocked(signIn);
 const mockedSignOut = vi.mocked(signOut);
 const mockedSignUp = vi.mocked(signUp);
@@ -54,14 +54,14 @@ async function fillCredentials(email: string, password: string) {
 beforeEach(() => {
   vi.clearAllMocks();
   mockedGetCurrentUser.mockResolvedValue(null);
-  mockedCreateDump.mockResolvedValue({
-    id: 'dump-1',
+  mockedCreateNote.mockResolvedValue({
+    id: 'note-1',
     content: 'olá',
     createdAt: '2026-10-14T00:00:00.000Z',
-    decks: [],
+    groups: [],
   });
-  mockedListDumps.mockResolvedValue([]);
-  mockedListDecks.mockResolvedValue([]);
+  mockedListNotes.mockResolvedValue([]);
+  mockedListGroups.mockResolvedValue([]);
   mockedSignIn.mockResolvedValue(ana);
   mockedSignUp.mockResolvedValue(ana);
 });
@@ -82,7 +82,7 @@ describe('auth gate', () => {
     renderApp('/login');
 
     expect(
-      await screen.findByRole('textbox', { name: /dump/i }),
+      await screen.findByRole('textbox', { name: /note/i }),
     ).toBeInTheDocument();
   });
 });
@@ -102,12 +102,12 @@ describe('signing in', () => {
       'correct horse battery',
     );
     expect(
-      await screen.findByRole('textbox', { name: /dump/i }),
+      await screen.findByRole('textbox', { name: /note/i }),
     ).toBeInTheDocument();
   });
 
   it('returns to the requested page after signing in', async () => {
-    renderApp('/app/deck/casa');
+    renderApp('/app/group/casa');
     const user = await fillCredentials(
       'ana@example.com',
       'correct horse battery',
@@ -118,7 +118,7 @@ describe('signing in', () => {
     expect(
       await screen.findByRole('heading', { name: '@casa' }),
     ).toBeInTheDocument();
-    expect(mockedListDumps).toHaveBeenCalledWith('casa');
+    expect(mockedListNotes).toHaveBeenCalledWith('casa');
   });
 
   it('shows the API error and stays on the login page', async () => {
@@ -132,7 +132,7 @@ describe('signing in', () => {
       'Invalid email or password',
     );
     expect(
-      screen.queryByRole('textbox', { name: /dump/i }),
+      screen.queryByRole('textbox', { name: /note/i }),
     ).not.toBeInTheDocument();
   });
 });
@@ -164,7 +164,7 @@ describe('signing up', () => {
       'correct horse battery',
     );
     expect(
-      await screen.findByRole('textbox', { name: /dump/i }),
+      await screen.findByRole('textbox', { name: /note/i }),
     ).toBeInTheDocument();
   });
 });

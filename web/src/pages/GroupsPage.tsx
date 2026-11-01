@@ -1,25 +1,27 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { listDecks, deleteDeck, type DeckWithCount } from '../api';
-import { DeckCard } from '../components/DeckCard';
+import { listGroups, deleteGroup, type GroupWithCount } from '../api';
+import { GroupCard } from '../components/GroupCard';
 
-function useDeckList() {
-  const [decks, setDecks] = useState<DeckWithCount[] | null>(null);
+function useGroupList() {
+  const [groups, setGroups] = useState<GroupWithCount[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
 
-    listDecks()
+    listGroups()
       .then((loaded) => {
         if (active) {
-          setDecks(loaded);
+          setGroups(loaded);
         }
       })
       .catch((cause: unknown) => {
         if (active) {
           setError(
-            cause instanceof Error ? cause.message : 'Could not load the decks',
+            cause instanceof Error
+              ? cause.message
+              : 'Could not load the groups',
           );
         }
       });
@@ -29,36 +31,36 @@ function useDeckList() {
     };
   }, []);
 
-  return { decks, error, setDecks, setError };
+  return { groups, error, setGroups, setError };
 }
 
-function useDecks() {
-  const { decks, error, setDecks, setError } = useDeckList();
+function useGroups() {
+  const { groups, error, setGroups, setError } = useGroupList();
 
   async function remove(id: string) {
     try {
-      await deleteDeck(id);
-      setDecks((current) =>
-        current === null ? current : current.filter((deck) => deck.id !== id),
+      await deleteGroup(id);
+      setGroups((current) =>
+        current === null ? current : current.filter((group) => group.id !== id),
       );
       setError(null);
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : 'Could not delete the deck',
+        cause instanceof Error ? cause.message : 'Could not delete the group',
       );
     }
   }
 
-  return { decks, error, remove };
+  return { groups, error, remove };
 }
 
-export function DecksPage() {
-  const { decks, error, remove } = useDecks();
+export function GroupsPage() {
+  const { groups, error, remove } = useGroups();
 
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-2xl border border-line bg-surface p-5 sm:p-8">
       <h1 className="text-sm font-medium tracking-widest text-ink-faint uppercase">
-        decks
+        groups
       </h1>
 
       {error ? (
@@ -67,25 +69,25 @@ export function DecksPage() {
         </p>
       ) : null}
 
-      {decks === null ? (
+      {groups === null ? (
         <p role="status" className="mt-4 text-sm text-ink-faint">
-          loading decks…
+          loading groups…
         </p>
-      ) : decks.length === 0 ? (
+      ) : groups.length === 0 ? (
         <p className="mt-4 text-sm text-ink-soft">
-          No decks yet.{' '}
+          No groups yet.{' '}
           <Link
             to="/app"
             className="text-mark underline-offset-4 hover:underline"
           >
-            write a dump
+            write a note
           </Link>{' '}
           to create the first one.
         </p>
       ) : (
         <ul className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-          {decks.map((deck) => (
-            <DeckCard key={deck.id} deck={deck} onDelete={remove} />
+          {groups.map((group) => (
+            <GroupCard key={group.id} group={group} onDelete={remove} />
           ))}
         </ul>
       )}
