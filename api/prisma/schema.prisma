@@ -7,17 +7,17 @@ datasource db {
   provider = "postgresql"
 }
 
-model Dump {
+model Note {
   id        String   @id @default(uuid(7))
   content   String
   createdAt DateTime @default(now())
-  decks     Deck[]
+  groups    Group[]
 }
 
-model Deck {
+model Group {
   id    String @id @default(uuid(7))
   name  String @unique
-  dumps Dump[]
+  notes Note[]
 }
 
 model User {
