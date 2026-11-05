@@ -121,4 +121,3 @@ Feature modules under `api/src/<feature>/`, each with `*.module.ts`, `*.controll
 - `api/.env` is optional in production; `main.ts` loads it via `process.loadEnvFile()` and host env vars win.
 - The API binds `127.0.0.1` by default (`HOST` overrides). Keep the Vite proxy on `127.0.0.1` to avoid IPv6/IPv4 mismatches.
 - The eslint configs exist for mido's size/analysis gates, not for day-to-day linting; linting is oxlint.
-- `api/vitest.config.e2e.ts` pins `QUICKDUMP_SCHEDULER: 'off'`, a leftover from the removed workflow scheduler; harmless, leave it alone.
