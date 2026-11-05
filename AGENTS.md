@@ -1,6 +1,6 @@
 # AGENTS.md
 
-quickdump captures short notes ("dumps") and groups them by deck. A dump is valid only when it ends with at least one `@deck` marker; the marker is stripped before saving and the deck relation is stored separately.
+flashnotes captures short notes ("dumps") and groups them by deck. A dump is valid only when it ends with at least one `@deck` marker; the marker is stripped before saving and the deck relation is stored separately.
 
 ## Core Principles
 
@@ -35,7 +35,7 @@ There is no root `package.json` or workspace. Each package owns its own lockfile
 ```bash
 # Database: pick one
 nix develop                  # dev shell with Node, Postgres and Prisma engines
-./scripts/pg.sh start        # creates quickdump and quickdump_test
+./scripts/pg.sh start        # creates flashnotes and flashnotes_test
 docker compose up -d         # alternative
 
 # API
@@ -104,7 +104,7 @@ Feature modules under `api/src/<feature>/`, each with `*.module.ts`, `*.controll
 ## Testing
 
 - Vitest everywhere, with `globals: true`. There is no Jest.
-- API unit specs are co-located (`src/dumps/deck-parser.spec.ts`). API e2e lives in `api/test/*.e2e-spec.ts`, runs serially (`fileParallelism: false`) against `quickdump_test`, and runs `prisma migrate deploy` in global setup. Override with `TEST_DATABASE_URL`.
+- API unit specs are co-located (`src/dumps/deck-parser.spec.ts`). API e2e lives in `api/test/*.e2e-spec.ts`, runs serially (`fileParallelism: false`) against `flashnotes_test`, and runs `prisma migrate deploy` in global setup. Override with `TEST_DATABASE_URL`.
 - Web tests are co-located (`*.test.ts`, `*.test.tsx`, `*.spec.ts`), jsdom + Testing Library; setup in `src/test/setup.ts`.
 - Test observable behavior and error paths. Repo convention keeps `test(...)` commits separate from `feat(...)` commits.
 

@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PGDATA="$ROOT/.pgdata"
 PGSOCK="$ROOT/.pgsock"
 PORT="${PGPORT:-5432}"
-DATABASES=(quickdump quickdump_test)
+DATABASES=(flashnotes flashnotes_test)
 
 pg() { nix shell nixpkgs#postgresql --command "$@"; }
 

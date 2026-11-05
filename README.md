@@ -36,7 +36,7 @@ Prerequisites: Node 24+, and Postgres in one of two ways:
 nix develop
 
 # Option A — local Postgres via nix (no Docker)
-./scripts/pg.sh start        # creates the quickdump and quickdump_test databases
+./scripts/pg.sh start        # creates the flashnotes and flashnotes_test databases
 
 # Option B — Docker
 docker compose up -d
@@ -76,7 +76,7 @@ Anonymous visits to `/app/**` redirect to `/login`; signing in returns to the re
 
 ```bash
 cd api && npm test           # unit (group parser)
-cd api && npm run test:e2e   # e2e with real Postgres (uses quickdump_test)
+cd api && npm run test:e2e   # e2e with real Postgres (uses flashnotes_test)
 cd web && npm test           # components and flows (jsdom + Testing Library)
 ```
 
