@@ -1,5 +1,5 @@
 {
-  description = "quickdump — API NestJS + web React, com Postgres local";
+  description = "flashnotes — API NestJS + web React, com Postgres local";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";

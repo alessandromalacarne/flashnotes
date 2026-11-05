@@ -13,7 +13,7 @@ export default defineConfig({
       NODE_ENV: 'test',
       DATABASE_URL:
         process.env.TEST_DATABASE_URL ??
-        'postgresql://postgres:postgres@localhost:5432/quickdump_test',
+        'postgresql://postgres:postgres@localhost:5432/flashnotes_test',
       // Tests drive the scheduler through `tick()` instead of a live timer.
       QUICKDUMP_SCHEDULER: 'off',
     },
