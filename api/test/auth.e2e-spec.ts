@@ -101,6 +101,65 @@ describe('rejecting invalid credentials', () => {
   });
 });
 
+describe('slowing down repeated failures', () => {
+  it('blocks an account after five wrong passwords', async () => {
+    const email = 'backoff@example.com';
+    await request(app.getHttpServer())
+      .post('/auth/sign-up')
+      .send({ email, password: 'correct horse battery' })
+      .expect(201);
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await request(app.getHttpServer())
+        .post('/auth/sign-in')
+        .send({ email, password: 'wrong password' })
+        .expect(401);
+    }
+
+    const blocked = await request(app.getHttpServer())
+      .post('/auth/sign-in')
+      .send({ email, password: 'correct horse battery' })
+      .expect(429);
+
+    expect(blocked.headers['retry-after']).toBeDefined();
+    expect(blocked.body.message).toBe(
+      'Too many sign-in attempts. Try again later.',
+    );
+  });
+
+  it('clears the counter after a successful sign-in', async () => {
+    const email = 'backoff-reset@example.com';
+    await request(app.getHttpServer())
+      .post('/auth/sign-up')
+      .send({ email, password: 'correct horse battery' })
+      .expect(201);
+
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      await request(app.getHttpServer())
+        .post('/auth/sign-in')
+        .send({ email, password: 'wrong password' })
+        .expect(401);
+    }
+
+    await request(app.getHttpServer())
+      .post('/auth/sign-in')
+      .send({ email, password: 'correct horse battery' })
+      .expect(200);
+
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      await request(app.getHttpServer())
+        .post('/auth/sign-in')
+        .send({ email, password: 'wrong password' })
+        .expect(401);
+    }
+
+    await request(app.getHttpServer())
+      .post('/auth/sign-in')
+      .send({ email, password: 'correct horse battery' })
+      .expect(200);
+  });
+});
+
 describe('signing out', () => {
   it('ends the session', async () => {
     const agent = request.agent(app.getHttpServer());

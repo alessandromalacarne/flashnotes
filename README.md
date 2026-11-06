@@ -108,6 +108,6 @@ Validation errors return 400. Note without a group: `{"message": "Include at lea
 - `/app/group/:group` lists the notes of a group with an empty composer (type the trailing marker yourself), inline editing and delete behind a `confirm?` step.
 - Export files render each note's groups in the header (`@home`), because the body no longer carries them.
 - Accounts use server-side cookie sessions (`HttpOnly`, `SameSite=Lax`): 3-day idle timeout, 14-day absolute lifetime. The cookie is `Secure` and uses the `__Host-` prefix when `NODE_ENV=production`; development uses a plain `sid` cookie so the Vite proxy on `http://localhost` works.
-- Sessions and password hashing are owned by `@nestjs/authentication`; the session store is in-memory for now, so a restart signs everyone out.
+- Sessions and password hashing are owned by `@nestjs/authentication`; the session store is in-memory unless `REDIS_URL` is set (`redis://:redis@127.0.0.1:6379` when using `compose.yaml`), so a restart with the in-memory store signs everyone out.
 - Prisma commands load `api/.env` automatically (values already in the environment win), so `npm run prisma:generate` and `npm run db:migrate` work on any OS.
 - On NixOS, Prisma cannot download its engines. The `flake.nix` devShell exports `PRISMA_SCHEMA_ENGINE_BINARY`, so run Prisma commands inside `nix develop`.
