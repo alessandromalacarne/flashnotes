@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { User } from './user.js';
+import { normalizeEmail } from './email.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-
-const normalize = (email: string) =>
-  email.trim().normalize('NFC').toLowerCase();
 
 @Injectable()
 export class UsersRepository {
@@ -11,7 +9,7 @@ export class UsersRepository {
 
   async create(email: string, passwordHash: string): Promise<User> {
     return this.prisma.user.create({
-      data: { email: normalize(email), passwordHash },
+      data: { email: normalizeEmail(email), passwordHash },
       select: { id: true, email: true },
     });
   }
@@ -25,7 +23,7 @@ export class UsersRepository {
 
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
-      where: { email: normalize(email) },
+      where: { email: normalizeEmail(email) },
       select: { id: true, email: true },
     });
   }
@@ -34,7 +32,7 @@ export class UsersRepository {
     email: string,
   ): Promise<{ user: User; passwordHash: string } | null> {
     const user = await this.prisma.user.findUnique({
-      where: { email: normalize(email) },
+      where: { email: normalizeEmail(email) },
       select: { id: true, email: true, passwordHash: true },
     });
 
