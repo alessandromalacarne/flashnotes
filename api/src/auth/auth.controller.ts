@@ -12,7 +12,12 @@ import {
   Public,
   SignInService,
 } from '@nestjs/authentication';
+import { Throttle } from '@nestjs/throttler';
 import type { User } from '../users/user.js';
+import {
+  AUTH_THROTTLE_LIMIT,
+  AUTH_THROTTLE_TTL_MS,
+} from '../security/throttle.config.js';
 import { SignInDto, SignUpDto } from './auth.dto.js';
 import { CredentialsService } from './credentials.service.js';
 
@@ -24,6 +29,9 @@ export class AuthController {
   ) {}
 
   @Public()
+  @Throttle({
+    default: { limit: AUTH_THROTTLE_LIMIT, ttl: AUTH_THROTTLE_TTL_MS },
+  })
   @Post('sign-up')
   async signUp(@Body() body: SignUpDto): Promise<User> {
     const user = await this.credentialsService.register(
@@ -35,6 +43,9 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({
+    default: { limit: AUTH_THROTTLE_LIMIT, ttl: AUTH_THROTTLE_TTL_MS },
+  })
   @Post('sign-in')
   @HttpCode(200)
   async signIn(@Body() body: SignInDto) {
