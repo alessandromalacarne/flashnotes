@@ -1,12 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { AuthenticationContext } from '@nestjs/authentication';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class GroupsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authContext: AuthenticationContext,
+  ) {}
 
   async list() {
+    const { id: userId } = this.authContext.requireUser();
+
     const groups = await this.prisma.group.findMany({
+      where: { userId },
       include: { _count: { select: { notes: true } } },
       orderBy: [{ notes: { _count: 'desc' } }, { name: 'asc' }],
     });
@@ -19,12 +26,14 @@ export class GroupsService {
   }
 
   async remove(id: string): Promise<void> {
-    const group = await this.prisma.group.findUnique({ where: { id } });
+    const { id: userId } = this.authContext.requireUser();
 
-    if (!group) {
+    const { count } = await this.prisma.group.deleteMany({
+      where: { id, userId },
+    });
+
+    if (count === 0) {
       throw new NotFoundException('Group not found');
     }
-
-    await this.prisma.group.delete({ where: { id } });
   }
 }

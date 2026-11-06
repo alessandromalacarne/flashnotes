@@ -8,20 +8,31 @@ datasource db {
 }
 
 model Note {
-  id        String   @id @default(uuid(7))
-  content   String
-  createdAt DateTime @default(now())
-  groups    Group[]
+  id         String   @id @default(uuid(7))
+  userId     String
+  content    String
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  groups     Group[]
 }
 
 model Group {
-  id    String @id @default(uuid(7))
-  name  String @unique
-  notes Note[]
+  id     String @id @default(uuid(7))
+  userId String
+  name   String
+
+  user   User   @relation(fields: [userId], references: [id])
+  notes  Note[]
+
+  @@unique([userId, name])
 }
 
 model User {
-    id           String @id @default(uuid(7))
-    email        String @unique
-    passwordHash String 
+  id           String  @id @default(uuid(7))
+  email        String  @unique
+  passwordHash String
+
+  notes        Note[]
+  groups       Group[]
 }
