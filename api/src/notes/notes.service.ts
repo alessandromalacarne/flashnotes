@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { AuthenticationContext } from '@nestjs/authentication';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { MAX_GROUP_NAME_LENGTH, MAX_GROUPS_PER_NOTE } from './note-limits.js';
 import { extractGroups, stripGroups } from './group-parser.js';
 import type { CreateNoteDto } from './dto/create-note.dto.js';
 import type { UpdateNoteDto } from './dto/update-note.dto.js';
@@ -123,6 +124,18 @@ function parseNote(raw: string): ParsedNote {
 
   if (groupNames.length === 0) {
     throw new BadRequestException('Include at least one @group in the note');
+  }
+
+  if (groupNames.length > MAX_GROUPS_PER_NOTE) {
+    throw new BadRequestException(
+      `A note can reference at most ${MAX_GROUPS_PER_NOTE} groups`,
+    );
+  }
+
+  if (groupNames.some((name) => name.length > MAX_GROUP_NAME_LENGTH)) {
+    throw new BadRequestException(
+      `Group names can have at most ${MAX_GROUP_NAME_LENGTH} characters`,
+    );
   }
 
   const content = stripGroups(raw);
