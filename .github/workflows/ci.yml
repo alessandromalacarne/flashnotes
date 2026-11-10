@@ -13,6 +13,28 @@ permissions:
   contents: read
 
 jobs:
+  audit:
+    name: npm audit (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [api, web]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Dev tooling does not ship, so only production dependencies are gated.
+      # High and critical advisories fail the build.
+      - name: Audit production dependencies
+        working-directory: ${{ matrix.target }}
+        run: npm audit --omit=dev --audit-level=high
+
   guardrails:
     name: mido (${{ matrix.target }})
     runs-on: ubuntu-latest
