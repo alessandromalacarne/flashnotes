@@ -16,17 +16,17 @@ flashnotes captures short notes ("dumps") and groups them by deck. A dump is val
 
 ## Repository layout
 
-| Path                       | What it is                                                  |
-| -------------------------- | ----------------------------------------------------------- |
-| `api/`                     | NestJS 12 + Prisma 7 + PostgreSQL, ESM TypeScript           |
-| `web/`                     | React 19 + Vite 8 + Tailwind 4 SPA, TypeScript              |
-| `api/prisma/`              | Schema and migrations                                       |
-| `api/test/`                | e2e suites (supertest + real Postgres)                      |
-| `scripts/pg.sh`            | Local Postgres via nix (`start`, `stop`, `status`, `reset`)  |
-| `compose.yaml`             | Postgres via Docker (alternative to `pg.sh`)                |
-| `flake.nix`                | devShell: Node 24, Postgres 17, Prisma engines              |
-| `.mido.toml`               | Guardrails ladder configuration                             |
-| `.github/workflows/ci.yml` | CI matrix running the mido ladder for `api` and `web`       |
+| Path                       | What it is                                                     |
+| -------------------------- | -------------------------------------------------------------- |
+| `api/`                     | NestJS 12 + Prisma 7 + PostgreSQL, ESM TypeScript              |
+| `web/`                     | React 19 + Vite 8 + Tailwind 4 SPA, TypeScript                 |
+| `api/prisma/`              | Schema and migrations                                          |
+| `api/test/`                | e2e suites (supertest + real Postgres)                         |
+| `scripts/pg.sh`            | Local Postgres via nix (`start`, `stop`, `status`, `reset`)    |
+| `compose.yaml`             | Postgres via Docker (alternative to `pg.sh`)                   |
+| `flake.nix`                | devShell: Node 24, Postgres 17, Prisma engines                 |
+| `.mido.toml`               | Guardrails ladder configuration                                |
+| `.github/workflows/ci.yml` | CI: mido guardrails ladder and `npm audit` for `api` and `web` |
 
 There is no root `package.json` or workspace. Each package owns its own lockfile and install step.
 
