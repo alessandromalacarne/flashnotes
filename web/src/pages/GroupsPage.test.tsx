@@ -2,10 +2,10 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { deleteGroup, listGroups } from '../api';
+import { deleteGroup, listGroups } from '../local/store';
 import { GroupsPage } from './GroupsPage';
 
-vi.mock('../api', () => ({
+vi.mock('../local/store', () => ({
   listGroups: vi.fn(),
   deleteGroup: vi.fn(),
 }));

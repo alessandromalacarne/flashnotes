@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Note } from '../api';
+import type { Note } from '../local/store';
 
 const dateFormat = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',

@@ -3,26 +3,23 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
-import {
-  createNote,
-  getCurrentUser,
-  listGroups,
-  listNotes,
-  signIn,
-  signOut,
-  signUp,
-} from '../api';
+import { getCurrentUser, signIn, signOut, signUp } from '../api';
+import { createNote, listGroups, listNotes } from '../local/store';
 
 vi.mock('../api', () => ({
-  createNote: vi.fn(),
-  deleteNote: vi.fn(),
-  deleteGroup: vi.fn(),
   getCurrentUser: vi.fn(),
-  listNotes: vi.fn(),
-  listGroups: vi.fn(),
   signIn: vi.fn(),
   signOut: vi.fn(),
   signUp: vi.fn(),
+}));
+
+vi.mock('../local/store', () => ({
+  createNote: vi.fn(),
+  deleteNote: vi.fn(),
+  deleteGroup: vi.fn(),
+  listNotes: vi.fn(),
+  listGroups: vi.fn(),
+  setLocalUser: vi.fn(),
   updateNote: vi.fn(),
 }));
 
