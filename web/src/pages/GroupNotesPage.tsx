@@ -6,7 +6,7 @@ import {
   listNotes,
   updateNote,
   type Note,
-} from '../api';
+} from '../local/store';
 import { Composer } from '../components/Composer';
 import { NoteCard } from '../components/NoteCard';
 

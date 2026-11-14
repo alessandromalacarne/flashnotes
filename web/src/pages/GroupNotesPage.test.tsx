@@ -2,10 +2,10 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createNote, deleteNote, listNotes, updateNote } from '../api';
+import { createNote, deleteNote, listNotes, updateNote } from '../local/store';
 import { GroupNotesPage } from './GroupNotesPage';
 
-vi.mock('../api', () => ({
+vi.mock('../local/store', () => ({
   createNote: vi.fn(),
   deleteNote: vi.fn(),
   listNotes: vi.fn(),

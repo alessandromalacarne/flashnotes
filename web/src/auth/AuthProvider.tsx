@@ -13,6 +13,7 @@ import {
   type User,
 } from '../api';
 import { AuthContext, type AuthState } from './auth-context';
+import { setLocalUser } from '../local/store';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -25,11 +26,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((current) => {
         if (active) {
           setUser(current);
+          setLocalUser(current?.id ?? null);
         }
       })
       .catch(() => {
         if (active) {
           setUser(null);
+          setLocalUser(null);
         }
       })
       .finally(() => {
@@ -45,12 +48,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     const signed = await apiSignIn(email, password);
+    setLocalUser(signed.id);
     setUser(signed);
     return signed;
   }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
     const created = await apiSignUp(email, password);
+    setLocalUser(created.id);
     setUser(created);
     return created;
   }, []);
@@ -59,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await apiSignOut();
     } finally {
+      setLocalUser(null);
       setUser(null);
     }
   }, []);
