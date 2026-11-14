@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import type { GroupWithCount } from '../api';
+import type { GroupWithCount } from '../local/store';
 
 interface GroupCardProps {
   group: GroupWithCount;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { listGroups, deleteGroup, type GroupWithCount } from '../api';
+import { listGroups, deleteGroup, type GroupWithCount } from '../local/store';
 import { GroupCard } from '../components/GroupCard';
 
 function useGroupList() {

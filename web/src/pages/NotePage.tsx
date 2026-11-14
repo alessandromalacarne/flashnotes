@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { createNote } from '../api';
+import { createNote } from '../local/store';
 import { Composer } from '../components/Composer';
 
 export function NotePage() {
