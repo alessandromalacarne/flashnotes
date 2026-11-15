@@ -1,6 +1,5 @@
+import { MAX_NOTE_LENGTH, parseNote } from '@flashnotes/core';
 import { useEffect, useRef, useState } from 'react';
-import { extractGroups, stripGroups } from '../lib/extract-groups';
-import { MAX_NOTE_LENGTH } from '../lib/note-limits';
 
 interface ComposerProps {
   onSubmit: (content: string) => Promise<void>;
@@ -28,12 +27,9 @@ function useComposer(onSubmit: (content: string) => Promise<void>) {
       setError('Write something before dumping');
       return;
     }
-    if (extractGroups(content).length === 0) {
-      setError('Include at least one @group in the note');
-      return;
-    }
-    if (stripGroups(content).length === 0) {
-      setError('The note needs text besides the @group');
+    const parsed = parseNote(content);
+    if (!parsed.ok) {
+      setError(parsed.message);
       return;
     }
 

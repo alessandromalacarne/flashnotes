@@ -10,7 +10,10 @@ const testing = process.env.VITEST !== undefined;
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    fs: { strict: !testing },
+    // The shared core is a `file:` dependency, so Vite resolves it to a real
+    // path outside web/. Allow the repository root in dev; the build and the
+    // test run read it from node_modules without this list.
+    fs: { strict: !testing, allow: ['.', '..'] },
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:3000',

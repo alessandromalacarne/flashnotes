@@ -1,7 +1,6 @@
-export interface User {
-  id: string;
-  email: string;
-}
+import type { User } from '@flashnotes/core';
+
+export type { User };
 
 function errorMessage(body: unknown, status: number): string {
   if (body && typeof body === 'object' && 'message' in body) {
