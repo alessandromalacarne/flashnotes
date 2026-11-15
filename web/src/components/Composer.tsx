@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { extractGroups, stripGroups } from '../lib/extract-groups';
+import { MAX_NOTE_LENGTH } from '../lib/note-limits';
 
 interface ComposerProps {
   onSubmit: (content: string) => Promise<void>;
@@ -122,6 +123,7 @@ export function Composer({ onSubmit }: ComposerProps) {
           }
         }}
         disabled={busy}
+        maxLength={MAX_NOTE_LENGTH}
         className="min-h-0 w-full flex-1 resize-none bg-transparent p-5 text-lg leading-relaxed text-ink placeholder:text-ink-faint focus:outline-none disabled:opacity-60 sm:p-8 sm:text-xl"
       />
 
