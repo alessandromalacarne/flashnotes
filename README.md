@@ -20,6 +20,10 @@ api/                 REST API (auth + notes + groups)
   src/notes/         POST /notes, GET /notes?group=, PATCH /notes/:id, DELETE /notes/:id
   src/groups/         GET /groups, DELETE /groups/:id
   test/              e2e tests (supertest + real Postgres, signed-in agent)
+core/                @flashnotes/core: rules shared by api and web
+  src/group-parser   trailing @group parser
+  src/parse-note     note validation and its error messages
+  src/*-limits       note/group and auth limits
 web/                 SPA: landing, login/signup, composer and group pages
   src/auth/          session context, route guards
 scripts/pg.sh        Local Postgres via nix (init/start/stop/reset)
@@ -45,7 +49,11 @@ docker compose up -d
 Then:
 
 ```bash
-cd api
+cd core
+npm install
+npm run build                # api and web import the built package
+
+cd ../api
 cp .env.example .env
 npm install
 npm run prisma:generate
@@ -75,10 +83,13 @@ Anonymous visits to `/app/**` redirect to `/login`; signing in returns to the re
 ## Tests
 
 ```bash
-cd api && npm test           # unit (group parser)
+cd core && npm test          # marker parser, note validation, limits
+cd api && npm test           # unit (session store, login backoff)
 cd api && npm run test:e2e   # e2e with real Postgres (uses flashnotes_test)
 cd web && npm test           # components and flows (jsdom + Testing Library)
 ```
+
+After changing `core/src`, rebuild it (`npm run build` in `core/`); `api` and `web` consume `core/dist`.
 
 ## API
 
