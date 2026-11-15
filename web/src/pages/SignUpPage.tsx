@@ -1,9 +1,8 @@
+import { MIN_PASSWORD_LENGTH } from '@flashnotes/core';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../auth/auth-context';
 import { AuthForm } from '../components/AuthForm';
 import { AuthShell } from '../components/AuthShell';
-
-const MIN_PASSWORD = 12;
 
 export function SignUpPage() {
   const { signUp } = useAuth();
@@ -17,10 +16,10 @@ export function SignUpPage() {
       <AuthForm
         submitLabel="Create account"
         passwordAutoComplete="new-password"
-        passwordHint={`At least ${MIN_PASSWORD} characters.`}
+        passwordHint={`At least ${MIN_PASSWORD_LENGTH} characters.`}
         onSubmit={async (email, password) => {
-          if (password.length < MIN_PASSWORD) {
-            throw new Error(`Use at least ${MIN_PASSWORD} characters`);
+          if (password.length < MIN_PASSWORD_LENGTH) {
+            throw new Error(`Use at least ${MIN_PASSWORD_LENGTH} characters`);
           }
 
           await signUp(email, password);
