@@ -6,7 +6,7 @@ import {
   type SessionRecord,
 } from '@nestjs/authentication';
 
-import type { User } from '../users/user.js';
+import type { User } from '@flashnotes/core';
 import { UsersRepository } from '../users/users.repository.js';
 
 @Injectable()

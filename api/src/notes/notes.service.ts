@@ -1,3 +1,4 @@
+import { parseNote } from '@flashnotes/core';
 import {
   BadRequestException,
   Injectable,
@@ -5,15 +6,8 @@ import {
 } from '@nestjs/common';
 import { AuthenticationContext } from '@nestjs/authentication';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { MAX_GROUP_NAME_LENGTH, MAX_GROUPS_PER_NOTE } from './note-limits.js';
-import { extractGroups, stripGroups } from './group-parser.js';
 import type { CreateNoteDto } from './dto/create-note.dto.js';
 import type { UpdateNoteDto } from './dto/update-note.dto.js';
-
-interface ParsedNote {
-  content: string;
-  groupNames: string[];
-}
 
 @Injectable()
 export class NotesService {
@@ -23,7 +17,7 @@ export class NotesService {
   ) {}
 
   async create(dto: CreateNoteDto) {
-    const { content, groupNames } = parseNote(dto.content);
+    const { content, groupNames } = parse(dto.content);
     const { id: userId } = this.authContext.requireUser();
 
     const note = await this.prisma.note.create({
@@ -61,7 +55,7 @@ export class NotesService {
   }
 
   async update(id: string, dto: UpdateNoteDto) {
-    const { content, groupNames } = parseNote(dto.content);
+    const { content, groupNames } = parse(dto.content);
     const { id: userId } = this.authContext.requireUser();
 
     const { updated } = await this.prisma.$transaction(async (tx) => {
@@ -119,30 +113,12 @@ export class NotesService {
 
 // The marker only points at a group: what lands in the body is plain text, and
 // the relation is the only place a note's groups live.
-function parseNote(raw: string): ParsedNote {
-  const groupNames = extractGroups(raw);
+function parse(raw: string): { content: string; groupNames: string[] } {
+  const parsed = parseNote(raw);
 
-  if (groupNames.length === 0) {
-    throw new BadRequestException('Include at least one @group in the note');
+  if (!parsed.ok) {
+    throw new BadRequestException(parsed.message);
   }
 
-  if (groupNames.length > MAX_GROUPS_PER_NOTE) {
-    throw new BadRequestException(
-      `A note can reference at most ${MAX_GROUPS_PER_NOTE} groups`,
-    );
-  }
-
-  if (groupNames.some((name) => name.length > MAX_GROUP_NAME_LENGTH)) {
-    throw new BadRequestException(
-      `Group names can have at most ${MAX_GROUP_NAME_LENGTH} characters`,
-    );
-  }
-
-  const content = stripGroups(raw);
-
-  if (content.length === 0) {
-    throw new BadRequestException('The note needs text besides the @group');
-  }
-
-  return { content, groupNames };
+  return parsed;
 }

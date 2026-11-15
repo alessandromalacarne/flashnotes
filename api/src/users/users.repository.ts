@@ -1,5 +1,5 @@
+import type { User } from '@flashnotes/core';
 import { Injectable } from '@nestjs/common';
-import type { User } from './user.js';
 import { normalizeEmail } from './email.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
