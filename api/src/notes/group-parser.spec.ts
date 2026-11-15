@@ -14,6 +14,20 @@ describe('extractGroups', () => {
     ).toEqual(['café', '42', 'big-house', 'welcome_here']);
   });
 
+  it('keeps letters outside the BMP in a marker name', () => {
+    // U+10400 is one letter encoded as two code units; its lowercase is U+10428.
+    expect(extractGroups('remember @\u{10400}')).toEqual(['\u{10428}']);
+  });
+
+  it('ignores a note that is only an astral letter', () => {
+    expect(extractGroups('\u{10400}')).toEqual([]);
+  });
+
+  it('accepts any whitespace before a marker', () => {
+    expect(extractGroups('coffee\u00a0@home')).toEqual(['home']);
+    expect(extractGroups('coffee\t@home')).toEqual(['home']);
+  });
+
   it('ignores a marker at the start of the dump', () => {
     expect(extractGroups('@home sweep the floor')).toEqual([]);
   });
@@ -33,6 +47,10 @@ describe('extractGroups', () => {
 
   it('ignores an @ glued to a word', () => {
     expect(extractGroups('mail me at foo@bar.com')).toEqual([]);
+  });
+
+  it('ignores a marker glued to the text before it', () => {
+    expect(extractGroups('see x@home')).toEqual([]);
   });
 
   it('ignores a lone @', () => {
@@ -99,9 +117,17 @@ describe('stripGroups', () => {
     expect(stripGroups('coffee  \nsecond @home')).toBe('coffee\nsecond');
   });
 
+  it('strips any whitespace that carried a marker', () => {
+    expect(stripGroups('coffee\u00a0@home')).toBe('coffee');
+  });
+
   it('leaves an @ glued to a word alone', () => {
     expect(stripGroups('mail me at foo@bar.com @home')).toBe(
       'mail me at foo@bar.com',
     );
+  });
+
+  it('keeps a marker glued to the text before it', () => {
+    expect(stripGroups('see x@home')).toBe('see x@home');
   });
 });
