@@ -1,9 +1,4 @@
-import { extractGroups, stripGroups } from '../lib/extract-groups';
-import {
-  MAX_GROUP_NAME_LENGTH,
-  MAX_GROUPS_PER_NOTE,
-  MAX_NOTE_LENGTH,
-} from '../lib/note-limits';
+import { parseNote } from '@flashnotes/core';
 import type { LocalDatabase } from './database';
 import { newId } from './ids';
 
@@ -30,37 +25,13 @@ interface ParsedNote {
 
 const NOTE_COLUMNS = 'id, content, created_at';
 
-// Same validation order and messages as api/src/notes/notes.service.ts.
-function parseNote(raw: string): ParsedNote {
-  if (raw.length > MAX_NOTE_LENGTH) {
-    throw new Error(
-      `content must be shorter than or equal to ${MAX_NOTE_LENGTH} characters`,
-    );
+// The same validation and messages the API applies, from the shared core.
+function parse(raw: string): ParsedNote {
+  const parsed = parseNote(raw);
+  if (!parsed.ok) {
+    throw new Error(parsed.message);
   }
-
-  const groupNames = extractGroups(raw);
-
-  if (groupNames.length === 0) {
-    throw new Error('Include at least one @group in the note');
-  }
-  if (groupNames.length > MAX_GROUPS_PER_NOTE) {
-    throw new Error(
-      `A note can reference at most ${MAX_GROUPS_PER_NOTE} groups`,
-    );
-  }
-  if (groupNames.some((name) => name.length > MAX_GROUP_NAME_LENGTH)) {
-    throw new Error(
-      `Group names can have at most ${MAX_GROUP_NAME_LENGTH} characters`,
-    );
-  }
-
-  const content = stripGroups(raw);
-
-  if (content.length === 0) {
-    throw new Error('The note needs text besides the @group');
-  }
-
-  return { content, groupNames };
+  return parsed;
 }
 
 function ensureGroup(db: LocalDatabase, name: string): string {
@@ -138,7 +109,7 @@ function linkGroups(db: LocalDatabase, noteId: string, names: string[]): void {
 }
 
 export function createNote(db: LocalDatabase, raw: string): Note {
-  const { content, groupNames } = parseNote(raw);
+  const { content, groupNames } = parse(raw);
 
   return db.transaction(() => {
     const id = newId();
@@ -184,7 +155,7 @@ export function updateNote(
   noteId: string,
   raw: string,
 ): Note {
-  const { content, groupNames } = parseNote(raw);
+  const { content, groupNames } = parse(raw);
 
   return db.transaction(() => {
     if (!noteExists(db, noteId)) {

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-flashnotes captures short notes ("dumps") and groups them by deck. A dump is valid only when it ends with at least one `@deck` marker; the marker is stripped before saving and the deck relation is stored separately.
+flashnotes captures short notes and groups them by `@group`. A note is valid only when it ends with at least one `@group` marker; the marker is stripped before saving and the group relation is stored separately.
 
 ## Core Principles
 
@@ -11,7 +11,7 @@ flashnotes captures short notes ("dumps") and groups them by deck. A dump is val
 - **ESM imports must end in `.js`** even though the source is `.ts` (`module: nodenext`). Omitting the extension breaks at runtime.
 - **Every route is protected by default.** Only `POST /auth/sign-up` and `POST /auth/sign-in` are `@Public()`. New routes without a guard are a security bug.
 - **Public user reads must `select: { id, email }`.** Omitting `select` leaks `passwordHash`.
-- **Two deck parsers must stay in sync.** `api/src/dumps/deck-parser.ts` and `web/src/lib/extract-decks.ts` must be behaviorally identical; update both when marker rules change.
+- **Shared domain rules live in `core/`.** Note/group parsing, note validation, limits and the `User` type are imported from `@flashnotes/core` by both `api` and `web`; never re-implement them in a package. After changing `core/src`, run `npm run build` in `core/` before typechecking or testing `api`/`web`.
 - **Don't revert unrelated changes.** Uncommitted changes are the user's review state.
 
 ## Repository layout
@@ -20,13 +20,14 @@ flashnotes captures short notes ("dumps") and groups them by deck. A dump is val
 | -------------------------- | -------------------------------------------------------------- |
 | `api/`                     | NestJS 12 + Prisma 7 + PostgreSQL, ESM TypeScript              |
 | `web/`                     | React 19 + Vite 8 + Tailwind 4 SPA, TypeScript                 |
+| `core/`                    | `@flashnotes/core`: domain rules shared by `api` and `web`     |
 | `api/prisma/`              | Schema and migrations                                          |
 | `api/test/`                | e2e suites (supertest + real Postgres)                         |
 | `scripts/pg.sh`            | Local Postgres via nix (`start`, `stop`, `status`, `reset`)    |
 | `compose.yaml`             | Postgres via Docker (alternative to `pg.sh`)                   |
 | `flake.nix`                | devShell: Node 24, Postgres 17, Prisma engines                 |
 | `.mido.toml`               | Guardrails ladder configuration                                |
-| `.github/workflows/ci.yml` | CI: mido guardrails ladder and `npm audit` for `api` and `web` |
+| `.github/workflows/ci.yml` | CI: mido guardrails ladder and `npm audit` for each package     |
 
 There is no root `package.json` or workspace. Each package owns its own lockfile and install step.
 
@@ -37,6 +38,11 @@ There is no root `package.json` or workspace. Each package owns its own lockfile
 nix develop                  # dev shell with Node, Postgres and Prisma engines
 ./scripts/pg.sh start        # creates flashnotes and flashnotes_test
 docker compose up -d         # alternative
+
+# Core (shared domain rules)
+cd core
+npm install
+npm run build                # required before api/web typecheck, test or build
 
 # API
 cd api
@@ -54,16 +60,16 @@ npm run dev                  # http://localhost:5173, proxies /api to the API
 
 Validation per package:
 
-| Check      | API                                 | Web                       |
-| ---------- | ----------------------------------- | ------------------------- |
-| Unit tests | `npm test` (`*.spec.ts`)            | `npm test` (`*.test.tsx`) |
-| e2e tests  | `npm run test:e2e`                  | —                         |
-| Lint       | `npm run lint` (oxlint, type-aware) | `npm run lint` (oxlint)   |
-| Types      | `npx tsc --noEmit -p tsconfig.json` | `npx tsc -b`              |
-| Format     | `npx prettier --check src test`     | `npx prettier --check .`  |
-| Build      | `npm run build`                     | `npm run build`           |
+| Check      | Core                                | API                                 | Web                       |
+| ---------- | ----------------------------------- | ----------------------------------- | ------------------------- |
+| Unit tests | `npm test`                          | `npm test` (`*.spec.ts`)            | `npm test` (`*.test.tsx`) |
+| e2e tests  | —                                   | `npm run test:e2e`                  | —                         |
+| Lint       | `npm run lint` (oxlint)             | `npm run lint` (oxlint, type-aware) | `npm run lint` (oxlint)   |
+| Types      | `npx tsc --noEmit -p tsconfig.json` | `npx tsc --noEmit -p tsconfig.json` | `npx tsc -b`              |
+| Format     | `npx prettier --check src`          | `npx prettier --check src test`     | `npx prettier --check .`  |
+| Build      | `npm run build`                     | `npm run build`                     | `npm run build`           |
 
-Guardrails gate: run `mido --lang typescript -p api` and `mido --lang typescript -p web`. A change is not done until both targets report `SHIP-READY`. Thresholds live in `.mido.toml`: file 300/500 LOC, function 40/60 LOC, complexity 10/15, nesting 3/4, cognitive complexity 15, coverage 80%. Keep functions small; when one crosses the limit, split along behavior, not by moving JSX into another file.
+Guardrails gate: run `mido --lang typescript -p core`, `mido --lang typescript -p api` and `mido --lang typescript -p web`. A change is not done until every affected target reports `SHIP-READY`. The API target measures the Redis session store too, so run it with `REDIS_URL` set like CI does (`REDIS_URL=redis://:redis@127.0.0.1:6379` for the compose instance); without it the measured surface is incomplete. Thresholds live in `.mido.toml`: file 300/500 LOC, function 40/60 LOC, complexity 10/15, nesting 3/4, cognitive complexity 15, coverage 80%. Keep functions small; when one crosses the limit, split along behavior, not by moving JSX into another file.
 
 ## API architecture
 
@@ -86,11 +92,11 @@ Feature modules under `api/src/<feature>/`, each with `*.module.ts`, `*.controll
 - Emails are trimmed in the DTO, then NFC-normalized and lowercased in `UsersRepository` — prevents duplicate accounts from unicode variants.
 - Sessions are in-memory: restarting the API signs everyone out. Dumps and decks are not user-scoped yet.
 
-### Deck parsing
+### Notes, groups and the shared core
 
-`api/src/dumps/deck-parser.ts` is the source of truth. Only markers at the end count (`buy coffee @home` yes; `@home buy coffee` no), names are lowercased and deduplicated, and `stripDecks` removes them from the body. On update/delete, orphan decks are removed inside the same transaction.
+`core/src/group-parser.ts` is the source of truth for markers. Only markers at the end count (`buy coffee @home` yes; `@home buy coffee` no), names are lowercased and deduplicated, and the body is stored without them. `core/src/parse-note.ts` holds the validation order and the exact error messages — the API maps them to `BadRequestException` (400) and the web composer renders them, so the wording is a contract. Limits and the auth limits live in `core/src/note-limits.ts` and `core/src/auth-limits.ts`; the DTOs, the SQLite store and the sign-up form all read them from `@flashnotes/core`.
 
-`web/src/lib/extract-decks.ts` mirrors the parser so `Composer` can validate before the request. The two implementations and their tests (`deck-parser.spec.ts`, `extract-decks.spec.ts`) must stay behaviorally identical; update both when marker rules change (see Core Principles).
+`core` is a real package (`core/package.json`, `exports` → `dist`). `api` and `web` depend on it with `file:../core`, so it must be built (`npm run build` in `core/`) before either package typechecks, tests or builds — CI builds it before the api/web ladders. On update/delete, orphan groups are removed inside the same transaction by each store.
 
 ## Web architecture
 
@@ -104,15 +110,16 @@ Feature modules under `api/src/<feature>/`, each with `*.module.ts`, `*.controll
 ## Testing
 
 - Vitest everywhere, with `globals: true`. There is no Jest.
-- API unit specs are co-located (`src/dumps/deck-parser.spec.ts`). API e2e lives in `api/test/*.e2e-spec.ts`, runs serially (`fileParallelism: false`) against `flashnotes_test`, and runs `prisma migrate deploy` in global setup. Override with `TEST_DATABASE_URL`.
+- API unit specs are co-located (`src/auth/session.store.spec.ts`). API e2e lives in `api/test/*.e2e-spec.ts`, runs serially (`fileParallelism: false`) against `flashnotes_test`, and runs `prisma migrate deploy` in global setup. Override with `TEST_DATABASE_URL`.
+- Core specs are co-located in `core/src/*.spec.ts` and run with the package's own Vitest config.
 - Web tests are co-located (`*.test.ts`, `*.test.tsx`, `*.spec.ts`), jsdom + Testing Library; setup in `src/test/setup.ts`.
 - Test observable behavior and error paths. Repo convention keeps `test(...)` commits separate from `feat(...)` commits.
 
 ## Conventions
 
-- Conventional commits with a scope: `feat(api):`, `feat(web):`, `test(api):`, `docs:`, `chore:`. Work on a feature branch and open a PR; CI runs on pushes to `main` and on PRs.
+- Conventional commits with a scope: `feat(api):`, `feat(web):`, `feat(core):`, `test(api):`, `docs:`, `chore:`. Work on a feature branch and open a PR; CI runs on pushes to `main` and on PRs.
 - TypeScript strict mode; avoid `any` and non-null assertions where a narrow type works — strict mode catches null/undefined errors at compile time.
-- Comments only where the reasoning is non-obvious (see `dumps.service.ts`, `deck-parser.ts`) — code should be self-documenting.
+- Comments only where the reasoning is non-obvious (see `notes.service.ts`, `core/src/group-parser.ts`) — code should be self-documenting.
 - `WALKTHROUGH.md` is gitignored and intentionally untracked; it is a local living document, not part of the diff.
 - On NixOS, run Prisma commands inside `nix develop` — the devShell exports `PRISMA_SCHEMA_ENGINE_BINARY` because Prisma cannot download engines there.
 

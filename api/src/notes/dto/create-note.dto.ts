@@ -1,5 +1,5 @@
+import { MAX_NOTE_LENGTH } from '@flashnotes/core';
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
-import { MAX_NOTE_LENGTH } from '../note-limits.js';
 
 export class CreateNoteDto {
   @IsString()

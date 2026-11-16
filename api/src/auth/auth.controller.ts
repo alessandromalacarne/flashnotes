@@ -13,7 +13,7 @@ import {
   SignInService,
 } from '@nestjs/authentication';
 import { Throttle } from '@nestjs/throttler';
-import type { User } from '../users/user.js';
+import type { User } from '@flashnotes/core';
 import {
   AUTH_THROTTLE_LIMIT,
   AUTH_THROTTLE_TTL_MS,

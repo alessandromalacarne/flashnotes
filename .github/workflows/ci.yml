@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [api, web]
+        target: [api, core, web]
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [api, web]
+        target: [api, core, web]
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/flashnotes_test
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/flashnotes_test
@@ -80,7 +80,15 @@ jobs:
           cache: npm
           cache-dependency-path: |
             api/package-lock.json
+            core/package-lock.json
             web/package-lock.json
+
+      # api and web depend on the built `file:../core` package, so the shared
+      # core has to exist in dist/ before either ladder typechecks or tests.
+      - name: Build the shared core
+        run: |
+          npm ci --prefix core
+          npm run build --prefix core
 
       - name: Install dependencies
         working-directory: ${{ matrix.target }}

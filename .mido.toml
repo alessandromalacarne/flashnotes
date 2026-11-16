@@ -59,10 +59,31 @@ command      = ["npx", "vitest", "run", "--config", "./vitest.config.e2e.ts", "-
 coverage_min = 80
 
 # The unit suite is the only one stryker can drive without the repo config (same
-# `extends` gap as web), so the sweep covers what that suite covers: the deck
-# parser. Widen it to the e2e suite once mido merges stryker.config.json.
+# `extends` gap as web) and the parser moved to `core/`, so the sweep covers the
+# pure, unit-tested normalizer left in the API. Widen it to the e2e suite once
+# mido merges stryker.config.json.
 [targets.api.mutation]
-command = ["npx", "--no-install", "stryker", "run", "--testRunner", "vitest", "--timeoutMS", "30000", "--mutate", "src/notes/group-parser.ts"]
+command = ["npx", "--no-install", "stryker", "run", "--testRunner", "vitest", "--timeoutMS", "30000", "--mutate", "src/users/email.ts"]
+
+# core — shared domain rules, own tsc/vitest/oxlint
+[targets.core.syntax]
+format    = ["npx", "--no-install", "prettier", "--check", "src"]
+lint      = ["npx", "oxlint", "src/"]
+typecheck = ["npx", "tsc", "--noEmit", "-p", "tsconfig.json"]
+
+# `--no-color`: same reporter-summary parse as the other targets.
+[targets.core.tests]
+command      = ["npx", "vitest", "run", "--no-color"]
+timeout_secs = 900
+
+[targets.core.coverage]
+command      = ["npx", "vitest", "run", "--coverage", "--coverage.reporter=lcov", "--coverage.reportsDirectory=coverage"]
+coverage_min = 80
+
+# Same stryker `extends` gap as the other targets: the parser is pure logic with
+# a unit suite, so the sweep covers it here now that the API no longer owns it.
+[targets.core.mutation]
+command = ["npx", "--no-install", "stryker", "run", "--testRunner", "vitest", "--timeoutMS", "30000", "--mutate", "src/group-parser.ts"]
 
 [failure]
 max_attempts_per_gate = 3
