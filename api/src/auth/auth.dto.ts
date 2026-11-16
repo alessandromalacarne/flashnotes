@@ -1,10 +1,13 @@
+import {
+  MAX_EMAIL_LENGTH,
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+} from '@flashnotes/core';
 import { Transform, type TransformFnParams } from 'class-transformer';
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
 
 const trim = ({ value }: TransformFnParams) =>
   typeof value === 'string' ? value.trim() : value;
-
-const MAX_EMAIL_LENGTH = 254;
 
 export class SignUpDto {
   @Transform(trim)
@@ -13,8 +16,8 @@ export class SignUpDto {
   email: string;
 
   @IsString()
-  @MinLength(12)
-  @MaxLength(128)
+  @MinLength(MIN_PASSWORD_LENGTH)
+  @MaxLength(MAX_PASSWORD_LENGTH)
   password: string;
 }
 
@@ -25,6 +28,6 @@ export class SignInDto {
   email: string;
 
   @IsString()
-  @MaxLength(128)
+  @MaxLength(MAX_PASSWORD_LENGTH)
   password: string;
 }

@@ -1,0 +1,39 @@
+{
+  "name": "@flashnotes/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Domain rules shared by the flashnotes API and web app",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "oxlint src/",
+    "test": "vitest run",
+    "test:cov": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "^9.5.0",
+    "@stryker-mutator/vitest-runner": "^9.5.0",
+    "@types/node": "^24.0.0",
+    "@typescript-eslint/parser": "^8.71.2",
+    "@vitest/coverage-v8": "^4.1.2",
+    "eslint": "^10.12.0",
+    "eslint-plugin-sonarjs": "^4.2.2",
+    "oxlint": "^1.58.0",
+    "oxlint-tsgolint": "^7.0.2001",
+    "prettier": "^3.4.2",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  }
+}

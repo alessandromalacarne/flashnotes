@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { PasswordHasher } from '@nestjs/authentication';
-import type { User } from '../users/user.js';
+import type { User } from '@flashnotes/core';
 import { UsersRepository } from '../users/users.repository.js';
 import { LoginBackoffService } from './login-backoff.service.js';
 import { TooManyAttemptsException } from './too-many-attempts.filter.js';
