@@ -7,6 +7,9 @@ import { GroupsModule } from './groups/groups.module.js';
 import { NotesModule } from './notes/notes.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { THROTTLE_LIMIT, THROTTLE_TTL_MS } from './security/throttle.config.js';
+import { serverDbEnabled } from './feature-flags.js';
+
+const databaseModules = serverDbEnabled() ? [NotesModule, GroupsModule] : [];
 
 @Module({
   imports: [
@@ -22,8 +25,7 @@ import { THROTTLE_LIMIT, THROTTLE_TTL_MS } from './security/throttle.config.js';
     }),
     PrismaModule,
     AuthModule,
-    NotesModule,
-    GroupsModule,
+    ...databaseModules,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
