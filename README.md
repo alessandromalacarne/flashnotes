@@ -46,6 +46,8 @@ nix develop
 docker compose up -d
 ```
 
+On Debian/Ubuntu `scripts/pg.sh` manages a dedicated cluster through `pg_createcluster`, so it needs `sudo`.
+
 Then:
 
 ```bash
