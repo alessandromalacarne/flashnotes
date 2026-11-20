@@ -23,7 +23,7 @@ flashnotes captures short notes and groups them by `@group`. A note is valid onl
 | `core/`                    | `@flashnotes/core`: domain rules shared by `api` and `web`     |
 | `api/prisma/`              | Schema and migrations                                          |
 | `api/test/`                | e2e suites (supertest + real Postgres)                         |
-| `scripts/pg.sh`            | Local Postgres via nix (`start`, `stop`, `status`, `reset`)    |
+| `scripts/pg.sh`            | Local Postgres (`start`, `stop`, `status`, `reset`)            |
 | `compose.yaml`             | Postgres via Docker (alternative to `pg.sh`)                   |
 | `flake.nix`                | devShell: Node 24, Postgres 17, Prisma engines                 |
 | `.mido.toml`               | Guardrails ladder configuration                                |
