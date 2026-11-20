@@ -26,7 +26,7 @@ core/                @flashnotes/core: rules shared by api and web
   src/*-limits       note/group and auth limits
 web/                 SPA: landing, login/signup, composer and group pages
   src/auth/          session context, route guards
-scripts/pg.sh        Local Postgres via nix (init/start/stop/reset)
+scripts/pg.sh        Local Postgres (init/start/stop/reset)
 compose.yaml         Postgres via Docker, alternative to pg.sh
 flake.nix            devShell (Node 24 + Postgres + Prisma engines)
 ```
@@ -39,7 +39,7 @@ Prerequisites: Node 24+, and Postgres in one of two ways:
 # Option 0 — nix devShell (Node, Postgres and Prisma engines ready to go)
 nix develop
 
-# Option A — local Postgres via nix (no Docker)
+# Option A — local Postgres (no Docker)
 ./scripts/pg.sh start        # creates the flashnotes and flashnotes_test databases
 
 # Option B — Docker
