@@ -53,6 +53,12 @@ export async function signUp(email: string, password: string): Promise<User> {
   return (await response.json()) as User;
 }
 
+export async function startDemo(): Promise<User> {
+  const response = await request('/api/auth/demo', { method: 'POST' });
+  const body = (await response.json()) as { user: User };
+  return body.user;
+}
+
 export async function signOut(): Promise<void> {
   await request('/api/auth/sign-out', { method: 'POST' });
 }

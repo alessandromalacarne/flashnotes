@@ -23,6 +23,18 @@ interface ParsedNote {
   groupNames: string[];
 }
 
+// The demo starts from the same set in every browser: seven notes split across
+// home (2), work (2) and ideas (3).
+export const DEMO_NOTES = [
+  'buy coffee @home',
+  'call the dentist @home',
+  'send the weekly report @work',
+  'review the pull request @work',
+  'read the article on note-taking @ideas',
+  'sketch the landing page @ideas',
+  'plan the launch @ideas',
+];
+
 const NOTE_COLUMNS = 'id, content, created_at';
 
 // The same validation and messages the API applies, from the shared core.
@@ -197,6 +209,21 @@ export function listGroups(db: LocalDatabase): GroupWithCount[] {
     name: String(row[1]),
     count: Number(row[2]),
   }));
+}
+
+export function clearAllData(db: LocalDatabase): void {
+  db.transaction(() => {
+    db.run('DELETE FROM note_groups');
+    db.run('DELETE FROM notes');
+    db.run('DELETE FROM groups');
+  });
+}
+
+export function seedDemoData(db: LocalDatabase): void {
+  clearAllData(db);
+  for (const raw of DEMO_NOTES) {
+    createNote(db, raw);
+  }
 }
 
 export function deleteGroup(db: LocalDatabase, groupId: string): void {
