@@ -1,8 +1,10 @@
-import type { ReactNode } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useOptionalAuth } from '../auth/auth-context';
 import { Brand } from '../components/Brand';
+import { Composer } from '../components/Composer';
 import { TryDemoButton } from '../components/TryDemoButton';
+import { createNote } from '../local/store';
 
 const primaryLinkClass =
   'inline-flex min-h-12 items-center justify-center rounded-full bg-mark px-7 font-semibold text-mark-contrast transition-[filter] hover:brightness-95';
@@ -10,51 +12,38 @@ const primaryLinkClass =
 const ghostLinkClass =
   'inline-flex min-h-12 items-center justify-center rounded-full border border-line px-7 text-ink-soft transition-colors hover:border-ink-faint hover:text-ink';
 
-function NotePreview() {
-  return (
-    <div
-      aria-hidden="true"
-      className="rounded-2xl border border-line bg-surface p-5 shadow-[0_24px_80px_oklch(0_0_0/0.45)] sm:p-6"
-    >
-      <div className="flex items-center justify-between text-xs text-ink-faint">
-        <span>new note</span>
-        <span className="rounded-full border border-line px-2 py-1">
-          autosaved
-        </span>
-      </div>
-
-      <p className="mt-6 min-h-24 text-lg leading-relaxed text-ink">
-        plan the launch
-        <br />
-        call the dentist
-        <br />
-        <span className="text-ink-soft">buy coffee</span>
-        <span className="text-mark"> @home @errands</span>
-      </p>
-
-      <div className="mt-6 flex items-center gap-2 border-t border-line pt-4 text-sm text-ink-faint">
-        <span>Shift+Enter sends</span>
-        <span className="ml-auto rounded-full bg-mark px-5 py-2 font-semibold text-mark-contrast">
-          Note
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function LandingHeader() {
   return (
     <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
       <Brand />
-      <nav aria-label="Account">
-        <Link
-          to="/login"
-          className="inline-flex min-h-11 items-center rounded-full px-4 text-sm text-ink-soft transition-colors hover:text-ink"
-        >
-          sign in
-        </Link>
-      </nav>
     </header>
+  );
+}
+
+function LocalComposer() {
+  const submit = useCallback(async (content: string) => {
+    await createNote(content);
+  }, []);
+
+  return (
+    <section
+      id="composer"
+      aria-label="Try flashnotes"
+      className="mx-auto w-full max-w-4xl"
+    >
+      <div className="h-64 sm:h-72">
+        <Composer onSubmit={submit} />
+      </div>
+      <p className="mt-3 text-center text-xs text-ink-faint">
+        Saved on this device. Server sync is not available yet.{' '}
+        <Link
+          to="/app/groups"
+          className="text-mark underline-offset-4 hover:underline"
+        >
+          browse your groups
+        </Link>
+      </p>
+    </section>
   );
 }
 
@@ -78,10 +67,10 @@ function Hero({ demoEntry }: { demoEntry?: ReactNode }) {
 
       <div className="mt-9 flex flex-wrap items-center gap-3">
         <Link to="/signup" className={primaryLinkClass}>
-          start dumping
+          create an account
         </Link>
         <Link to="/login" className={ghostLinkClass}>
-          I have an account
+          sign in
         </Link>
         {demoEntry}
       </div>
@@ -138,7 +127,7 @@ export function LandingPage() {
   const canTryDemo = auth !== null && !auth.loading && auth.user === null;
 
   return (
-    <div className="relative flex min-h-dvh flex-col overflow-hidden">
+    <div className="relative flex min-h-dvh flex-col">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-[42rem] bg-[radial-gradient(ellipse_at_top,oklch(0.8_0.14_75/0.1),transparent_65%)]"
@@ -146,8 +135,10 @@ export function LandingPage() {
 
       <LandingHeader />
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-16">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-5 pt-5 pb-20 sm:px-8 sm:pt-8">
+        <LocalComposer />
+
+        <section className="mt-20">
           <Hero
             demoEntry={
               canTryDemo ? (
@@ -157,8 +148,7 @@ export function LandingPage() {
               ) : null
             }
           />
-          <NotePreview />
-        </div>
+        </section>
 
         <FeatureGrid />
       </main>

@@ -11,7 +11,7 @@ export function SignUpPage() {
   return (
     <AuthShell
       title="Create your flashnotes"
-      subtitle="One account, one place for every loose thought."
+      subtitle="Notes save on this device. Server sync is not available yet."
     >
       <AuthForm
         submitLabel="Create account"

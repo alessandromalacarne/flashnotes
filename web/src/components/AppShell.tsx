@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../auth/auth-context';
 import { DemoBanner } from './DemoBanner';
 
@@ -14,7 +14,7 @@ export function AppShell() {
 
   async function handleSignOut() {
     await signOut().catch(() => undefined);
-    navigate('/login', { replace: true });
+    navigate('/', { replace: true });
   }
 
   return (
@@ -24,7 +24,7 @@ export function AppShell() {
         className="flex shrink-0 items-center gap-4 pb-2 text-sm"
       >
         <span className="mr-auto truncate text-xs text-ink-faint">
-          {user?.email}
+          {user?.email ?? 'saved on this device'}
         </span>
         <NavLink to="/app" end className={navLinkClass}>
           note
@@ -35,13 +35,22 @@ export function AppShell() {
         >
           groups
         </NavLink>
-        <button
-          type="button"
-          onClick={() => void handleSignOut()}
-          className="text-ink-faint transition-colors hover:text-ink"
-        >
-          sign out
-        </button>
+        {user ? (
+          <button
+            type="button"
+            onClick={() => void handleSignOut()}
+            className="text-ink-faint transition-colors hover:text-ink"
+          >
+            sign out
+          </button>
+        ) : (
+          <Link
+            to="/login"
+            className="text-ink-faint transition-colors hover:text-ink"
+          >
+            sign in
+          </Link>
+        )}
       </nav>
 
       {user?.isDemo ? <DemoBanner userId={user.id} /> : null}
