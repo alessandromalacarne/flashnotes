@@ -28,7 +28,7 @@ const mockedGetCurrentUser = vi.mocked(getCurrentUser);
 const mockedListNotes = vi.mocked(listNotes);
 const mockedListGroups = vi.mocked(listGroups);
 
-const ana = { id: 'user-1', email: 'ana@example.com' };
+const ana = { id: 'user-1', email: 'ana@example.com', isDemo: false };
 
 function renderApp(path = '/app') {
   return render(

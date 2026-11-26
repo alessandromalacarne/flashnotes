@@ -31,7 +31,7 @@ const mockedSignIn = vi.mocked(signIn);
 const mockedSignOut = vi.mocked(signOut);
 const mockedSignUp = vi.mocked(signUp);
 
-const ana = { id: 'user-1', email: 'ana@example.com' };
+const ana = { id: 'user-1', email: 'ana@example.com', isDemo: false };
 
 function renderApp(path = '/') {
   return render(
