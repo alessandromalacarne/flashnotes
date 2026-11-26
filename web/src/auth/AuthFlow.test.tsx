@@ -63,15 +63,15 @@ beforeEach(() => {
   mockedSignUp.mockResolvedValue(ana);
 });
 
-describe('auth gate', () => {
-  it('sends anonymous visitors from the app to the login page', async () => {
+describe('app access', () => {
+  it('keeps anonymous visitors in the local notes workspace', async () => {
     renderApp('/app');
 
     expect(
-      await screen.findByRole('heading', { name: /sign in/i }),
+      await screen.findByRole('textbox', { name: /new note/i }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument();
   });
 
   it('sends signed-in visitors from the login page to the app', async () => {
@@ -103,8 +103,8 @@ describe('signing in', () => {
     ).toBeInTheDocument();
   });
 
-  it('returns to the requested page after signing in', async () => {
-    renderApp('/app/group/home');
+  it('can be opened optionally and returns to the local composer after sign-in', async () => {
+    renderApp('/login');
     const user = await fillCredentials(
       'ana@example.com',
       'correct horse battery',
@@ -113,9 +113,8 @@ describe('signing in', () => {
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
 
     expect(
-      await screen.findByRole('heading', { name: '@home' }),
+      await screen.findByRole('textbox', { name: /new note/i }),
     ).toBeInTheDocument();
-    expect(mockedListNotes).toHaveBeenCalledWith('home');
   });
 
   it('shows the API error and stays on the login page', async () => {
@@ -167,7 +166,7 @@ describe('signing up', () => {
 });
 
 describe('signing out', () => {
-  it('ends the session and returns to the login page', async () => {
+  it('ends the session and returns to the local workspace', async () => {
     mockedGetCurrentUser.mockResolvedValue(ana);
     renderApp('/app');
     const user = userEvent.setup();
@@ -176,7 +175,10 @@ describe('signing out', () => {
 
     expect(mockedSignOut).toHaveBeenCalled();
     expect(
-      await screen.findByRole('heading', { name: /sign in/i }),
+      await screen.findByRole('heading', { name: /capture thoughts/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('textbox', { name: /new note/i }),
     ).toBeInTheDocument();
   });
 });

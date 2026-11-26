@@ -21,9 +21,11 @@ export const ACCOUNT_USER = {
   isDemo: false,
 };
 
-export function renderApp(path = '/') {
+export function renderApp(path = '/', state?: unknown) {
   return render(
-    <MemoryRouter initialEntries={[path]}>
+    <MemoryRouter
+      initialEntries={[state === undefined ? path : { pathname: path, state }]}
+    >
       <App />
     </MemoryRouter>,
   );

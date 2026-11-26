@@ -52,6 +52,32 @@ describe('createNote', () => {
   });
 });
 
+describe('database isolation', () => {
+  it('keeps guest and account notes in separate SQLite databases', () => {
+    const guestRaw = new sqlite3.oo1.DB(':memory:');
+    const accountRaw = new sqlite3.oo1.DB(':memory:');
+    const guestDb = sqliteDatabase(guestRaw);
+    const accountDb = sqliteDatabase(accountRaw);
+    migrate(guestDb);
+    migrate(accountDb);
+
+    try {
+      createNote(guestDb, 'guest note @home');
+      createNote(accountDb, 'account note @home');
+
+      expect(listNotes(guestDb, 'home').map(({ content }) => content)).toEqual([
+        'guest note',
+      ]);
+      expect(
+        listNotes(accountDb, 'home').map(({ content }) => content),
+      ).toEqual(['account note']);
+    } finally {
+      guestRaw.close();
+      accountRaw.close();
+    }
+  });
+});
+
 describe('createNote validation', () => {
   it.each([
     ['buy coffee', 'Include at least one @group in the note'],

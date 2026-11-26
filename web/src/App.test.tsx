@@ -70,8 +70,55 @@ describe('landing page', () => {
       await screen.findByRole('heading', { name: /capture thoughts/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('link', { name: /start dumping/i }),
+      screen.getByRole('link', { name: /create an account/i }),
     ).toHaveAttribute('href', '/signup');
+  });
+
+  it('shows the working composer before the existing landing content', async () => {
+    mockedGetCurrentUser.mockResolvedValue(null);
+    renderApp('/');
+
+    const composer = await screen.findByRole('textbox', { name: /new note/i });
+    const hero = screen.getByRole('heading', { name: /capture thoughts/i });
+
+    expect(
+      Boolean(
+        composer.compareDocumentPosition(hero) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      ),
+    ).toBe(true);
+  });
+
+  it('lets guest writers reach their local groups from the landing page', async () => {
+    mockedGetCurrentUser.mockResolvedValue(null);
+    renderApp('/');
+
+    expect(
+      await screen.findByRole('link', { name: /browse your groups/i }),
+    ).toHaveAttribute('href', '/app/groups');
+  });
+});
+
+describe('anonymous workspace', () => {
+  it('lets a guest create notes from the app without signing in', async () => {
+    const user = userEvent.setup();
+    mockedGetCurrentUser.mockResolvedValue(null);
+    renderApp('/app');
+
+    const textarea = await screen.findByRole('textbox', { name: /new note/i });
+    await user.type(textarea, 'buy coffee @home{Shift>}{Enter}{/Shift}');
+
+    expect(mockedCreateNote).toHaveBeenCalledWith('buy coffee @home');
+    expect(await screen.findByText('note saved')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'groups' })).toBeInTheDocument();
+  });
+
+  it('lets a guest open a group directly', async () => {
+    mockedGetCurrentUser.mockResolvedValue(null);
+    mockedListNotes.mockResolvedValue([homeNote]);
+    renderApp('/app/group/home');
+
+    expect(await screen.findByText('buy coffee')).toBeInTheDocument();
   });
 });
 

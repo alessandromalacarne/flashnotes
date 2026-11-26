@@ -15,8 +15,11 @@ describe('landing page', () => {
       screen.getByRole('heading', { name: /capture thoughts/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('link', { name: /start dumping/i }),
+      screen.getByRole('link', { name: /create an account/i }),
     ).toHaveAttribute('href', '/signup');
+    expect(
+      screen.getByRole('textbox', { name: /new note/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute(
       'href',
       '/login',
