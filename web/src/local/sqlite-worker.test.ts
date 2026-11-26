@@ -84,6 +84,10 @@ describe('sqlite worker', () => {
     expect(response).toEqual({ id: 1, ok: true, result: note });
     expect(mocks.sqliteDatabase).toHaveBeenCalledTimes(1);
     expect(mocks.migrate).toHaveBeenCalledTimes(1);
+    expect(mocks.installOpfsSAHPoolVfs).toHaveBeenCalledWith({
+      name: 'flashnotes-user-1',
+      directory: '.flashnotes/user-1',
+    });
     expect(mocks.createNote).toHaveBeenCalledWith(
       { marker: 'database' },
       'buy coffee @home',

@@ -80,17 +80,15 @@ describe('Entry points', () => {
     expect(mocks.startDemo).toHaveBeenCalledTimes(1);
     expect(mocks.prepareDemoData).toHaveBeenCalledWith(DEMO_USER.id);
     expect(
-      await screen.findByRole('textbox', { name: /note/i }),
+      await screen.findByRole('status', { name: 'Demo mode' }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole('status', { name: 'Demo mode' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /note/i })).toBeInTheDocument();
   });
 
   // Feature: The login page enters the demo and honours the return path
   it('the login page enters the demo and honours the return path', async () => {
     const user = userEvent.setup();
-    renderApp('/app/groups');
+    renderApp('/login', { from: '/app/groups' });
 
     await user.click(await screen.findByRole('button', { name: 'Try demo' }));
 
@@ -132,7 +130,10 @@ describe('Entry points', () => {
       'Demo is not available',
     );
     expect(
-      screen.queryByRole('textbox', { name: /note/i }),
+      screen.getByRole('heading', { name: /capture thoughts/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('status', { name: 'Demo mode' }),
     ).not.toBeInTheDocument();
     expect(mocks.prepareDemoData).not.toHaveBeenCalled();
   });

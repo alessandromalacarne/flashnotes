@@ -36,6 +36,40 @@ async function loadStore() {
   return import('./store');
 }
 
+type Store = Awaited<ReturnType<typeof loadStore>>;
+
+const forwardedOperations: Array<{
+  name: string;
+  run: (store: Store) => Promise<unknown>;
+  operation: string;
+}> = [
+  {
+    name: 'listNotes',
+    run: (store) => store.listNotes('home'),
+    operation: 'listNotes',
+  },
+  {
+    name: 'listGroups',
+    run: (store) => store.listGroups(),
+    operation: 'listGroups',
+  },
+  {
+    name: 'deleteNote',
+    run: (store) => store.deleteNote('note-1'),
+    operation: 'deleteNote',
+  },
+  {
+    name: 'deleteGroup',
+    run: (store) => store.deleteGroup('group-1'),
+    operation: 'deleteGroup',
+  },
+  {
+    name: 'updateNote',
+    run: (store) => store.updateNote('note-1', 'tea @work'),
+    operation: 'updateNote',
+  },
+];
+
 beforeEach(() => {
   vi.resetModules();
   FakeWorker.instances = [];
@@ -47,12 +81,75 @@ afterEach(() => {
 });
 
 describe('setLocalUser', () => {
-  it('rejects operations while nobody is signed in', async () => {
+  it('keeps guest notes separate from each signed-in account', async () => {
     const store = await loadStore();
+    store.setLocalUser(null);
+    const guestOperation = store.listGroups();
+    const worker = FakeWorker.instances[0]!;
+    expect(worker.posted[0]!.userId).toBe('browser-local');
+    worker.respond({ id: worker.posted[0]!.id, ok: true, result: [] });
+    await guestOperation;
 
-    await expect(store.createNote('buy coffee @home')).rejects.toThrow(
-      'No signed-in user for local notes.',
-    );
+    store.setLocalUser('user-1');
+    const firstAccountOperation = store.listGroups();
+    expect(worker.posted[1]!.userId).toBe('user-1');
+    expect(worker.posted[1]).not.toHaveProperty('legacyUserId');
+    worker.respond({ id: worker.posted[1]!.id, ok: true, result: [] });
+    await firstAccountOperation;
+
+    store.setLocalUser('user-2');
+    const secondAccountOperation = store.listGroups();
+    expect(worker.posted[2]!.userId).toBe('user-2');
+    expect(worker.posted[2]).not.toHaveProperty('legacyUserId');
+    worker.respond({ id: worker.posted[2]!.id, ok: true, result: [] });
+    await secondAccountOperation;
+  });
+
+  it('waits for auth restoration before selecting the database', async () => {
+    const store = await loadStore();
+    const operation = store.listGroups();
+
+    expect(FakeWorker.instances).toHaveLength(0);
+
+    store.setLocalUser('user-1');
+    await vi.waitFor(() => expect(FakeWorker.instances).toHaveLength(1));
+
+    const worker = FakeWorker.instances[0]!;
+    expect(worker.posted[0]!.userId).toBe('user-1');
+    worker.respond({ id: worker.posted[0]!.id, ok: true, result: [] });
+    await operation;
+  });
+});
+
+describe('database identity', () => {
+  it('reuses the browser database identity after the store is reloaded', async () => {
+    const firstStore = await loadStore();
+    firstStore.setLocalUser('user-1');
+    const firstOperation = firstStore.listGroups();
+    const firstWorker = FakeWorker.instances[0]!;
+    const databaseId = firstWorker.posted[0]!.userId;
+    firstWorker.respond({
+      id: firstWorker.posted[0]!.id,
+      ok: true,
+      result: [],
+    });
+    await firstOperation;
+
+    vi.resetModules();
+    FakeWorker.instances = [];
+    const reloadedStore = await loadStore();
+    reloadedStore.setLocalUser('user-1');
+    const reloadedOperation = reloadedStore.listGroups();
+    const reloadedWorker = FakeWorker.instances[0]!;
+
+    expect(databaseId).toBe('user-1');
+    expect(reloadedWorker.posted[0]!.userId).toBe('user-1');
+    reloadedWorker.respond({
+      id: reloadedWorker.posted[0]!.id,
+      ok: true,
+      result: [],
+    });
+    await reloadedOperation;
   });
 });
 
@@ -85,46 +182,19 @@ describe('worker requests', () => {
 });
 
 describe('worker forwarding', () => {
-  it.each([
-    [
-      'listNotes',
-      (store: Awaited<ReturnType<typeof loadStore>>) => store.listNotes('home'),
-      'listNotes',
-    ],
-    [
-      'listGroups',
-      (store: Awaited<ReturnType<typeof loadStore>>) => store.listGroups(),
-      'listGroups',
-    ],
-    [
-      'deleteNote',
-      (store: Awaited<ReturnType<typeof loadStore>>) =>
-        store.deleteNote('note-1'),
-      'deleteNote',
-    ],
-    [
-      'deleteGroup',
-      (store: Awaited<ReturnType<typeof loadStore>>) =>
-        store.deleteGroup('group-1'),
-      'deleteGroup',
-    ],
-    [
-      'updateNote',
-      (store: Awaited<ReturnType<typeof loadStore>>) =>
-        store.updateNote('note-1', 'tea @work'),
-      'updateNote',
-    ],
-  ])('forwards %s to the worker', async (_name, run, operation) => {
-    const store = await loadStore();
-    store.setLocalUser('user-1');
+  for (const { name, run, operation } of forwardedOperations) {
+    it(`forwards ${name} to the worker`, async () => {
+      const store = await loadStore();
+      store.setLocalUser('user-1');
 
-    const pending = run(store);
-    const worker = FakeWorker.instances[0]!;
-    expect(worker.posted[0]!.op).toBe(operation);
+      const pending = run(store);
+      const worker = FakeWorker.instances[0]!;
+      expect(worker.posted[0]!.op).toBe(operation);
 
-    worker.respond({ id: worker.posted[0]!.id, ok: true, result: [] });
-    await pending;
-  });
+      worker.respond({ id: worker.posted[0]!.id, ok: true, result: [] });
+      await pending;
+    });
+  }
 });
 
 describe('worker responses', () => {
