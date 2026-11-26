@@ -30,7 +30,7 @@ function NotePreview() {
       </p>
 
       <div className="mt-6 flex items-center gap-2 border-t border-line pt-4 text-sm text-ink-faint">
-        <span>Enter sends</span>
+        <span>Shift+Enter sends</span>
         <span className="ml-auto rounded-full bg-mark px-5 py-2 font-semibold text-mark-contrast">
           Note
         </span>
@@ -69,8 +69,8 @@ function Hero() {
       </h1>
       <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
         flashnotes is a tiny inbox for your brain. Type a thought, end it with a{' '}
-        <code className="text-mark">@group</code>, hit Enter. Find it later
-        without sorting a single folder.
+        <code className="text-mark">@group</code>, hit Shift+Enter. Find it
+        later without sorting a single folder.
       </p>
 
       <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -101,8 +101,8 @@ function FeatureCard({ title, children }: { title: string; children: string }) {
 function FeatureGrid() {
   return (
     <ul className="mt-20 grid gap-3 sm:grid-cols-3">
-      <FeatureCard title="Type. Enter. Done.">
-        The composer is the whole app. One field, one keystroke, and the thought
+      <FeatureCard title="Type. Shift+Enter. Done.">
+        The composer is the whole app. One field, one shortcut, and the thought
         is out of your head.
       </FeatureCard>
       <FeatureCard title="Groups, not folders">
