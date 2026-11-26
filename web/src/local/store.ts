@@ -63,12 +63,7 @@ function getWorker(): Worker {
   }
 }
 
-function call<T>(operation: LocalOperation): Promise<T> {
-  const userId = currentUserId;
-  if (!userId) {
-    return Promise.reject(new Error(SIGNED_OUT));
-  }
-
+function callAs<T>(userId: string, operation: LocalOperation): Promise<T> {
   let active: Worker;
   try {
     active = getWorker();
@@ -90,6 +85,14 @@ function call<T>(operation: LocalOperation): Promise<T> {
       reject(new Error(STORAGE_UNAVAILABLE));
     }
   });
+}
+
+function call<T>(operation: LocalOperation): Promise<T> {
+  const userId = currentUserId;
+  if (!userId) {
+    return Promise.reject(new Error(SIGNED_OUT));
+  }
+  return callAs(userId, operation);
 }
 
 export function createNote(content: string): Promise<Note> {
@@ -114,4 +117,15 @@ export function listGroups(): Promise<GroupWithCount[]> {
 
 export function deleteGroup(groupId: string): Promise<void> {
   return call({ op: 'deleteGroup', groupId });
+}
+
+// Both demo operations address a user directly: entry prepares the database
+// before the auth provider has switched the store over, and sign-out clears it
+// after the session is gone.
+export function prepareDemoData(userId: string): Promise<void> {
+  return callAs(userId, { op: 'prepareDemoData' });
+}
+
+export function clearDemoData(userId: string): Promise<void> {
+  return callAs(userId, { op: 'clearDemoData' });
 }

@@ -18,3 +18,14 @@ export const AUTH_THROTTLE_LIMIT = positiveInt(
   process.env.AUTH_THROTTLE_LIMIT,
   5,
 );
+
+// Demo entry is cheap (a session write, no password hash) but worth a bucket of
+// its own so demo traffic cannot spend the sign-in budget.
+export const DEMO_THROTTLE_TTL_MS = positiveInt(
+  process.env.DEMO_THROTTLE_TTL_MS,
+  60_000,
+);
+export const DEMO_THROTTLE_LIMIT = positiveInt(
+  process.env.DEMO_THROTTLE_LIMIT,
+  20,
+);

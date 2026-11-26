@@ -5,9 +5,10 @@ import { PrismaService } from '../src/prisma/prisma.service.js';
 import { configureApp } from '../src/setup.js';
 
 // The throttle limits are read while the app module graph loads. Give the e2e
-// suite room before that happens; the dedicated throttle test overrides them.
+// suite room before that happens; the dedicated throttle tests override them.
 process.env.THROTTLE_LIMIT ??= '10000';
 process.env.AUTH_THROTTLE_LIMIT ??= '10000';
+process.env.DEMO_THROTTLE_LIMIT ??= '10000';
 
 const { AppModule } = await import('../src/app.module.js');
 

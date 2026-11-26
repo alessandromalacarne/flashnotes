@@ -10,12 +10,13 @@ import {
   signIn as apiSignIn,
   signOut as apiSignOut,
   signUp as apiSignUp,
+  startDemo as apiStartDemo,
   type User,
 } from '../api';
 import { AuthContext, type AuthState } from './auth-context';
-import { setLocalUser } from '../local/store';
+import { clearDemoData, prepareDemoData, setLocalUser } from '../local/store';
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+function useCurrentUser() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,6 +47,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  return { user, setUser, loading };
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const { user, setUser, loading } = useCurrentUser();
+
   const signIn = useCallback(async (email: string, password: string) => {
     const signed = await apiSignIn(email, password);
     setLocalUser(signed.id);
@@ -60,18 +67,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return created;
   }, []);
 
+  const startDemo = useCallback(async () => {
+    const demo = await apiStartDemo();
+    setLocalUser(demo.id);
+    await prepareDemoData(demo.id);
+    setUser(demo);
+    return demo;
+  }, []);
+
   const signOut = useCallback(async () => {
     try {
+      if (user?.isDemo) {
+        await clearDemoData(user.id);
+      }
       await apiSignOut();
     } finally {
       setLocalUser(null);
       setUser(null);
     }
-  }, []);
+  }, [user]);
 
   const value = useMemo<AuthState>(
-    () => ({ user, loading, signIn, signUp, signOut }),
-    [user, loading, signIn, signUp, signOut],
+    () => ({ user, loading, signIn, signUp, startDemo, signOut }),
+    [user, loading, signIn, signUp, startDemo, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

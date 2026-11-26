@@ -10,21 +10,28 @@ export class UsersRepository {
   async create(email: string, passwordHash: string): Promise<User> {
     return this.prisma.user.create({
       data: { email: normalizeEmail(email), passwordHash },
-      select: { id: true, email: true },
+      select: { id: true, email: true, isDemo: true },
     });
   }
 
   async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id },
-      select: { id: true, email: true },
+      select: { id: true, email: true, isDemo: true },
     });
   }
 
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { email: normalizeEmail(email) },
-      select: { id: true, email: true },
+      select: { id: true, email: true, isDemo: true },
+    });
+  }
+
+  async findDemo(): Promise<User | null> {
+    return this.prisma.user.findFirst({
+      where: { isDemo: true },
+      select: { id: true, email: true, isDemo: true },
     });
   }
 
@@ -33,7 +40,7 @@ export class UsersRepository {
   ): Promise<{ user: User; passwordHash: string } | null> {
     const user = await this.prisma.user.findUnique({
       where: { email: normalizeEmail(email) },
-      select: { id: true, email: true, passwordHash: true },
+      select: { id: true, email: true, isDemo: true, passwordHash: true },
     });
 
     if (!user) {
@@ -41,7 +48,7 @@ export class UsersRepository {
     }
 
     return {
-      user: { id: user.id, email: user.email },
+      user: { id: user.id, email: user.email, isDemo: user.isDemo },
       passwordHash: user.passwordHash,
     };
   }

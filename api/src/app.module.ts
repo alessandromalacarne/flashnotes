@@ -15,6 +15,9 @@ const databaseModules = serverDbEnabled() ? [NotesModule, GroupsModule] : [];
   imports: [
     ThrottlerModule.forRoot([
       { name: 'default', ttl: THROTTLE_TTL_MS, limit: THROTTLE_LIMIT },
+      // Every named throttler applies to every route; the demo route overrides
+      // this bucket with its tighter budget via @Throttle.
+      { name: 'demo', ttl: THROTTLE_TTL_MS, limit: THROTTLE_LIMIT },
     ]),
     AuthenticationModule.forRoot({
       session: {
