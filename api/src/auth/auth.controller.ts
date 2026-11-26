@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Post,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import {
@@ -17,6 +18,8 @@ import type { User } from '@flashnotes/core';
 import {
   AUTH_THROTTLE_LIMIT,
   AUTH_THROTTLE_TTL_MS,
+  DEMO_THROTTLE_LIMIT,
+  DEMO_THROTTLE_TTL_MS,
 } from '../security/throttle.config.js';
 import { SignInDto, SignUpDto } from './auth.dto.js';
 import { CredentialsService } from './credentials.service.js';
@@ -61,6 +64,22 @@ export class AuthController {
       method: 'password',
     });
     return { user, mfaRequired: session.mfa === 'pending' };
+  }
+
+  @Public()
+  @Throttle({
+    demo: { limit: DEMO_THROTTLE_LIMIT, ttl: DEMO_THROTTLE_TTL_MS },
+  })
+  @Post('demo')
+  @HttpCode(200)
+  async demo() {
+    const user = await this.credentialsService.findDemoUser();
+    if (!user) {
+      throw new ServiceUnavailableException('Demo is not available');
+    }
+
+    await this.signInService.signIn(user.id, { method: 'password' });
+    return { user };
   }
 
   @Authenticate({ optional: true })
