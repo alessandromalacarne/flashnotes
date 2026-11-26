@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import { getCurrentUser } from './api';
 import { createNote, listNotes, listGroups } from './local/store';
@@ -45,6 +45,10 @@ const homeNote = {
   groups: [{ id: 'group-1', name: 'home' }],
 };
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockedGetCurrentUser.mockResolvedValue(ana);
@@ -78,19 +82,34 @@ describe('composer', () => {
     expect(await screen.findByRole('textbox', { name: /note/i })).toHaveFocus();
   });
 
-  it('sends with Enter, clears the field and confirms', async () => {
+  it('sends with Shift+Enter, clears the field and confirms', async () => {
     const user = userEvent.setup();
     renderApp();
     const textarea = await screen.findByRole('textbox', { name: /note/i });
 
-    await user.type(textarea, 'buy coffee @home{Enter}');
+    await user.type(textarea, 'buy coffee @home{Shift>}{Enter}{/Shift}');
 
     expect(mockedCreateNote).toHaveBeenCalledWith('buy coffee @home');
     expect(textarea).toHaveValue('');
     expect(await screen.findByText(/saved/i)).toBeInTheDocument();
   });
 
-  it('Shift+Enter breaks the line instead of sending', async () => {
+  it('Enter only breaks the line', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    const textarea = await screen.findByRole('textbox', { name: /note/i });
+
+    await user.type(textarea, 'line one{Enter}line two @home');
+
+    expect(mockedCreateNote).not.toHaveBeenCalled();
+    expect(textarea).toHaveValue('line one\nline two @home');
+  });
+
+  it('disables the send shortcut on touch devices', async () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({ matches: true, media: '(pointer: coarse)' })),
+    );
     const user = userEvent.setup();
     renderApp();
     const textarea = await screen.findByRole('textbox', { name: /note/i });
@@ -119,7 +138,7 @@ describe('composer errors', () => {
     renderApp();
     const textarea = await screen.findByRole('textbox', { name: /note/i });
 
-    await user.type(textarea, 'text without a group{Enter}');
+    await user.type(textarea, 'text without a group{Shift>}{Enter}{/Shift}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Include at least one @group in the note',
@@ -132,7 +151,7 @@ describe('composer errors', () => {
     renderApp();
     const textarea = await screen.findByRole('textbox', { name: /note/i });
 
-    await user.type(textarea, 'sweep @home the floor{Enter}');
+    await user.type(textarea, 'sweep @home the floor{Shift>}{Enter}{/Shift}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Include at least one @group in the note',
@@ -146,7 +165,7 @@ describe('composer errors', () => {
     renderApp();
     const textarea = await screen.findByRole('textbox', { name: /note/i });
 
-    await user.type(textarea, 'something @home{Enter}');
+    await user.type(textarea, 'something @home{Shift>}{Enter}{/Shift}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Database is down',
