@@ -28,6 +28,7 @@ describe('signing up', () => {
     expect(response.body).toEqual({
       id: expect.any(String),
       email: 'ana@example.com',
+      isDemo: false,
     });
   });
 });
@@ -208,7 +209,11 @@ describe('signing in', () => {
       .expect(200);
 
     expect(response.body).toEqual({
-      user: { id: created.body.id, email: 'ana@example.com' },
+      user: {
+        id: created.body.id,
+        email: 'ana@example.com',
+        isDemo: false,
+      },
       mfaRequired: false,
     });
   });

@@ -4,7 +4,9 @@ export type LocalOperation =
   | { op: 'updateNote'; noteId: string; content: string }
   | { op: 'deleteNote'; noteId: string }
   | { op: 'listGroups' }
-  | { op: 'deleteGroup'; groupId: string };
+  | { op: 'deleteGroup'; groupId: string }
+  | { op: 'prepareDemoData' }
+  | { op: 'clearDemoData' };
 
 export const STORAGE_UNAVAILABLE =
   'Local storage is unavailable. This browser cannot open the local notes database.';

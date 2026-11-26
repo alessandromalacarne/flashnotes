@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../auth/auth-context';
+import { DemoBanner } from './DemoBanner';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   isActive ? 'text-ink' : 'text-ink-faint transition-colors hover:text-ink';
@@ -42,6 +43,8 @@ export function AppShell() {
           sign out
         </button>
       </nav>
+
+      {user?.isDemo ? <DemoBanner userId={user.id} /> : null}
 
       <main className="flex min-h-0 flex-1 flex-col">
         <Outlet />

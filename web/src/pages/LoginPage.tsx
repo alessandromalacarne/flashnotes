@@ -3,6 +3,7 @@ import { useAuth } from '../auth/auth-context';
 import { returnTo } from '../auth/return-to';
 import { AuthForm } from '../components/AuthForm';
 import { AuthShell } from '../components/AuthShell';
+import { TryDemoButton } from '../components/TryDemoButton';
 
 export function LoginPage() {
   const { signIn } = useAuth();
@@ -33,6 +34,11 @@ export function LoginPage() {
             </Link>
           </>
         }
+      />
+
+      <TryDemoButton
+        className="mt-4"
+        onEntered={() => navigate(from, { replace: true })}
       />
     </AuthShell>
   );
