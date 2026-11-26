@@ -11,7 +11,10 @@ export type LocalOperation =
 export const STORAGE_UNAVAILABLE =
   'Local storage is unavailable. This browser cannot open the local notes database.';
 
-export type WorkerRequest = LocalOperation & { id: number; userId: string };
+export type WorkerRequest = LocalOperation & {
+  id: number;
+  userId: string;
+};
 
 export type WorkerResponse =
   | { id: number; ok: true; result: unknown }

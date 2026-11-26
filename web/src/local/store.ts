@@ -4,9 +4,13 @@ import { STORAGE_UNAVAILABLE } from './protocol';
 
 export type { Group, GroupWithCount, Note };
 
-const SIGNED_OUT = 'No signed-in user for local notes.';
+const BROWSER_DATABASE_ID = 'browser-local';
 
 let currentUserId: string | null = null;
+let resolveInitialUser: ((userId: string | null) => void) | null = null;
+let initialUser: Promise<string | null> | null = new Promise((resolve) => {
+  resolveInitialUser = resolve;
+});
 let worker: Worker | null = null;
 let nextRequestId = 1;
 const pending = new Map<
@@ -14,10 +18,12 @@ const pending = new Map<
   { resolve(value: unknown): void; reject(reason: unknown): void }
 >();
 
-// Authentication stays server-side, so the auth provider tells the store which
-// user's database to open.
+// Keep anonymous notes separate from account-specific local databases.
 export function setLocalUser(userId: string | null): void {
   currentUserId = userId;
+  resolveInitialUser?.(userId);
+  resolveInitialUser = null;
+  initialUser = null;
 }
 
 function failAll(cause: unknown): void {
@@ -77,7 +83,11 @@ function callAs<T>(userId: string, operation: LocalOperation): Promise<T> {
     pending.set(id, { resolve: (value) => resolve(value as T), reject });
 
     try {
-      const request: WorkerRequest = { ...operation, id, userId };
+      const request: WorkerRequest = {
+        ...operation,
+        id,
+        userId,
+      };
       active.postMessage(request);
     } catch {
       pending.delete(id);
@@ -88,11 +98,19 @@ function callAs<T>(userId: string, operation: LocalOperation): Promise<T> {
 }
 
 function call<T>(operation: LocalOperation): Promise<T> {
-  const userId = currentUserId;
-  if (!userId) {
-    return Promise.reject(new Error(SIGNED_OUT));
+  const resolvingUser = initialUser;
+  if (resolvingUser) {
+    return resolvingUser.then((userId) => callWithUser(operation, userId));
   }
-  return callAs(userId, operation);
+
+  return callWithUser(operation, currentUserId);
+}
+
+function callWithUser<T>(
+  operation: LocalOperation,
+  localUserId: string | null,
+): Promise<T> {
+  return callAs(localUserId ?? BROWSER_DATABASE_ID, operation);
 }
 
 export function createNote(content: string): Promise<Note> {

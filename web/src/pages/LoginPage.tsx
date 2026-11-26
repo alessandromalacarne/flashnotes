@@ -14,7 +14,7 @@ export function LoginPage() {
   return (
     <AuthShell
       title="Sign in to flashnotes"
-      subtitle="Your notes are one keystroke away."
+      subtitle="Local notes stay on this device. Server sync is not available yet."
     >
       <AuthForm
         submitLabel="Sign in"

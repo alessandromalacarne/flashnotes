@@ -44,7 +44,7 @@ export function sqliteDatabase(db: Database): LocalDatabase {
 }
 
 // The schema mirrors the server's Note/Group models minus the user columns:
-// every browser user gets a database file of their own.
+// accounts and the anonymous browser workspace use separate database files.
 export function migrate(db: LocalDatabase): void {
   db.run('PRAGMA foreign_keys = ON');
   db.run(`

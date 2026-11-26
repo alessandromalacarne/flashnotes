@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { AuthProvider } from './auth/AuthProvider';
 import { PublicOnly } from './auth/PublicOnly';
-import { RequireAuth } from './auth/RequireAuth';
 import { AppShell } from './components/AppShell';
 import { GroupNotesPage } from './pages/GroupNotesPage';
 import { GroupsPage } from './pages/GroupsPage';
@@ -31,14 +30,7 @@ function App() {
             </PublicOnly>
           }
         />
-        <Route
-          path="/app"
-          element={
-            <RequireAuth>
-              <AppShell />
-            </RequireAuth>
-          }
-        >
+        <Route path="/app" element={<AppShell />}>
           <Route index element={<NotePage />} />
           <Route path="groups" element={<GroupsPage />} />
           <Route path="group/:group" element={<GroupNotesPage />} />
