@@ -6,6 +6,7 @@ export interface AuthState {
   loading: boolean;
   signIn(email: string, password: string): Promise<User>;
   signUp(email: string, password: string): Promise<User>;
+  startDemo(): Promise<User>;
   signOut(): Promise<void>;
 }
 
@@ -17,4 +18,10 @@ export function useAuth(): AuthState {
     throw new Error('useAuth must be used inside AuthProvider');
   }
   return auth;
+}
+
+// For pages that also render outside the provider, such as the landing page in
+// isolation tests; the demo entry simply stays hidden without a session.
+export function useOptionalAuth(): AuthState | null {
+  return useContext(AuthContext);
 }

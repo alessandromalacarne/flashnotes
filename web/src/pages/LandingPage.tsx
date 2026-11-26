@@ -1,5 +1,8 @@
-import { Link } from 'react-router';
+import type { ReactNode } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { useOptionalAuth } from '../auth/auth-context';
 import { Brand } from '../components/Brand';
+import { TryDemoButton } from '../components/TryDemoButton';
 
 const primaryLinkClass =
   'inline-flex min-h-12 items-center justify-center rounded-full bg-mark px-7 font-semibold text-mark-contrast transition-[filter] hover:brightness-95';
@@ -55,7 +58,7 @@ function LandingHeader() {
   );
 }
 
-function Hero() {
+function Hero({ demoEntry }: { demoEntry?: ReactNode }) {
   return (
     <section>
       <p className="text-xs font-medium tracking-[0.2em] text-mark uppercase">
@@ -80,6 +83,7 @@ function Hero() {
         <Link to="/login" className={ghostLinkClass}>
           I have an account
         </Link>
+        {demoEntry}
       </div>
 
       <p className="mt-4 text-sm text-ink-faint">
@@ -129,6 +133,10 @@ function LandingFooter() {
 }
 
 export function LandingPage() {
+  const auth = useOptionalAuth();
+  const navigate = useNavigate();
+  const canTryDemo = auth !== null && !auth.loading && auth.user === null;
+
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden">
       <div
@@ -140,7 +148,15 @@ export function LandingPage() {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-16">
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
-          <Hero />
+          <Hero
+            demoEntry={
+              canTryDemo ? (
+                <TryDemoButton
+                  onEntered={() => navigate('/app', { replace: true })}
+                />
+              ) : null
+            }
+          />
           <NotePreview />
         </div>
 

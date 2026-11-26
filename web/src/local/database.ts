@@ -6,6 +6,7 @@ export interface LocalDatabase {
   run(sql: string, params?: SqlValue[]): void;
   all(sql: string, params?: SqlValue[]): Row[];
   transaction<T>(work: () => T): T;
+  close(): void;
 }
 
 export function sqliteDatabase(db: Database): LocalDatabase {
@@ -35,6 +36,9 @@ export function sqliteDatabase(db: Database): LocalDatabase {
         db.exec('ROLLBACK');
         throw cause;
       }
+    },
+    close() {
+      db.close();
     },
   };
 }
