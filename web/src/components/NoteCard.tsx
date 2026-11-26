@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Note } from '../local/store';
+import { isSubmitShortcut } from '../shortcuts';
 
 const dateFormat = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
@@ -152,7 +153,7 @@ function EditForm({
           if (event.key === 'Escape') {
             onCancel();
           }
-          if (event.key === 'Enter' && !event.shiftKey) {
+          if (isSubmitShortcut(event)) {
             event.preventDefault();
             onSave();
           }

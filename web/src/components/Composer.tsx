@@ -1,5 +1,6 @@
 import { MAX_NOTE_LENGTH, parseNote } from '@flashnotes/core';
 import { useEffect, useRef, useState } from 'react';
+import { isSubmitShortcut, usesTouchPointer } from '../shortcuts';
 
 interface ComposerProps {
   onSubmit: (content: string) => Promise<void>;
@@ -70,7 +71,9 @@ function ComposerFooter({ error, saved, busy }: ComposerFooterProps) {
         <p className="animate-fade-in text-sm text-ink-soft">note saved</p>
       ) : (
         <p className="text-sm text-ink-faint">
-          Enter sends · end with at least one @group
+          {usesTouchPointer()
+            ? 'End with at least one @group'
+            : 'Shift+Enter sends · end with at least one @group'}
         </p>
       )}
 
@@ -113,7 +116,7 @@ export function Composer({ onSubmit }: ComposerProps) {
         value={value}
         onChange={(event) => change(event.target.value)}
         onKeyDown={(event) => {
-          if (event.key === 'Enter' && !event.shiftKey) {
+          if (isSubmitShortcut(event)) {
             event.preventDefault();
             void submit();
           }
