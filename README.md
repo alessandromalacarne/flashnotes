@@ -2,7 +2,7 @@
 
 Capture thoughts in seconds, retrieve them by group later.
 
-A "note" is a short note that ends with at least one `@group` marker. Type it, hit Enter, done. The marker only points at the group: the body that gets saved holds the text alone. Notes are grouped by group for later processing (e.g. assembling a post from the notes of `@blog`).
+A "note" is a short note that ends with at least one `@group` marker. Type it, hit Shift+Enter, done. The marker only points at the group: the body that gets saved holds the text alone. Notes are grouped by group for later processing (e.g. assembling a post from the notes of `@blog`).
 
 ## Stack
 
@@ -117,7 +117,7 @@ Validation errors return 400. Note without a group: `{"message": "Include at lea
 
 - Groups come from the trailing markers (`@home` → `home`), lowercased, no duplicates. Only markers at the end of the note count: `buy coffee @home @work` links both groups, while `@home buy coffee` and `buy coffee @home now` have no group at all. The markers are stripped from the body before it is saved, so a note stores plain text and its groups as a relation. A group whose last note is edited away or deleted is removed from `/groups`.
 - Only a marker at the end links a group: `#home`, `foo@bar.com` and a marker followed by punctuation are plain text.
-- Web UI: dark theme, public landing page, login/signup, composer (Enter sends, Shift+Enter breaks the line, clicking anywhere focuses the field) and group pages.
+- Web UI: dark theme, public landing page, login/signup, composer (Shift+Enter sends, Enter breaks the line, the send shortcut is off on touch devices, clicking anywhere focuses the field) and group pages.
 - `/app/group/:group` lists the notes of a group with an empty composer (type the trailing marker yourself), inline editing and delete behind a `confirm?` step.
 - Export files render each note's groups in the header (`@home`), because the body no longer carries them.
 - Accounts use server-side cookie sessions (`HttpOnly`, `SameSite=Lax`): 3-day idle timeout, 14-day absolute lifetime. The cookie is `Secure` and uses the `__Host-` prefix when `NODE_ENV=production`; development uses a plain `sid` cookie so the Vite proxy on `http://localhost` works.
