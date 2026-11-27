@@ -74,7 +74,7 @@ describe('landing page', () => {
     ).toHaveAttribute('href', '/signup');
   });
 
-  it('shows the working composer before the existing landing content', async () => {
+  it('shows the composer before the existing landing content', async () => {
     mockedGetCurrentUser.mockResolvedValue(null);
     renderApp('/');
 
@@ -87,6 +87,18 @@ describe('landing page', () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
       ),
     ).toBe(true);
+  });
+
+  it('lets a guest write the first note from the landing composer', async () => {
+    const user = userEvent.setup();
+    mockedGetCurrentUser.mockResolvedValue(null);
+    renderApp('/');
+
+    const textarea = await screen.findByRole('textbox', { name: /new note/i });
+    await user.type(textarea, 'buy coffee @home{Shift>}{Enter}{/Shift}');
+
+    expect(mockedCreateNote).toHaveBeenCalledWith('buy coffee @home');
+    expect(await screen.findByText('note saved')).toBeInTheDocument();
   });
 
   it('lets guest writers reach their local groups from the landing page', async () => {
