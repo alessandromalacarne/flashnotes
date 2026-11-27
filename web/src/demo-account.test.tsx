@@ -98,6 +98,22 @@ describe('Entry points', () => {
     expect(mocks.listGroups).toHaveBeenCalled();
   });
 
+  // Feature: Signed-in visitors are not offered the demo
+  it('signed-in visitors are not offered the demo', async () => {
+    mocks.getCurrentUser.mockResolvedValue(DEMO_USER);
+
+    renderApp('/');
+    await within(
+      screen.getByRole('navigation', { name: /account/i }),
+    ).findByRole('link', { name: 'sign in' });
+
+    expect(
+      screen.queryByRole('button', { name: 'Try demo' }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('Demo entry resilience', () => {
   // Feature: Repeated clicks do not create extra sessions
   it('repeated clicks do not create extra sessions', async () => {
     const pending = deferred<typeof DEMO_USER>();
@@ -136,20 +152,6 @@ describe('Entry points', () => {
       screen.queryByRole('status', { name: 'Demo mode' }),
     ).not.toBeInTheDocument();
     expect(mocks.prepareDemoData).not.toHaveBeenCalled();
-  });
-
-  // Feature: Signed-in visitors are not offered the demo
-  it('signed-in visitors are not offered the demo', async () => {
-    mocks.getCurrentUser.mockResolvedValue(DEMO_USER);
-
-    renderApp('/');
-    await within(
-      screen.getByRole('navigation', { name: /account/i }),
-    ).findByRole('link', { name: 'sign in' });
-
-    expect(
-      screen.queryByRole('button', { name: 'Try demo' }),
-    ).not.toBeInTheDocument();
   });
 });
 
