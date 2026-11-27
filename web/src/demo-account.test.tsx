@@ -11,7 +11,7 @@
  *   - local/store.clearDemoData(userId): delete the demo database
  * The sample dataset itself is asserted by the local demo-data unit test.
  */
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -143,7 +143,9 @@ describe('Entry points', () => {
     mocks.getCurrentUser.mockResolvedValue(DEMO_USER);
 
     renderApp('/');
-    await screen.findByRole('link', { name: 'sign in' });
+    await within(
+      screen.getByRole('navigation', { name: /account/i }),
+    ).findByRole('link', { name: 'sign in' });
 
     expect(
       screen.queryByRole('button', { name: 'Try demo' }),

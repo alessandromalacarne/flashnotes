@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -71,7 +71,12 @@ describe('auth restoration for the local store', () => {
       userId: 'browser-local',
     });
 
-    await user.click(screen.getByRole('link', { name: /sign in/i }));
+    await user.click(
+      within(screen.getByRole('navigation', { name: /account/i })).getByRole(
+        'link',
+        { name: /sign in/i },
+      ),
+    );
     await user.type(await screen.findByLabelText(/email/i), ana.email);
     await user.type(
       screen.getByLabelText(/password/i),
