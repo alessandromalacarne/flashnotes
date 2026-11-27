@@ -1,5 +1,6 @@
+import { extractGroups } from '@flashnotes/core';
 import { useState } from 'react';
-import type { Note } from '../local/store';
+import type { Group, Note } from '../local/store';
 import { isSubmitShortcut } from '../shortcuts';
 
 const dateFormat = new Intl.DateTimeFormat('en-US', {
@@ -62,6 +63,18 @@ function failureOf(cause: unknown, fallback: string): string {
   return cause instanceof Error ? cause.message : fallback;
 }
 
+// Editing keeps the note in the groups it already belongs to. Groups typed in
+// the draft still add on top, and the parser dedupes the overlap.
+function withCurrentGroups(content: string, groups: Group[]): string {
+  const present = new Set(extractGroups(content));
+  const missing = groups
+    .map((group) => group.name)
+    .filter((name) => !present.has(name))
+    .map((name) => `@${name}`);
+
+  return [content, ...missing].filter((part) => part.length > 0).join(' ');
+}
+
 function useNoteEditor({ note, onUpdate, onDelete }: NoteCardProps) {
   const [draft, setDraft] = useState(note.content);
   const [editing, setEditing] = useState(false);
@@ -91,7 +104,7 @@ function useNoteEditor({ note, onUpdate, onDelete }: NoteCardProps) {
     setError(null);
     setBusy(true);
     try {
-      await onUpdate(note.id, draft.trim());
+      await onUpdate(note.id, withCurrentGroups(draft.trim(), note.groups));
       setEditing(false);
     } catch (cause) {
       setError(failureOf(cause, 'Could not update the note'));
