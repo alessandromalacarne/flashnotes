@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { LandingPage } from './LandingPage';
@@ -20,9 +20,12 @@ describe('landing page', () => {
     expect(
       screen.getByRole('textbox', { name: /new note/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute(
-      'href',
-      '/login',
-    );
+    const accountNav = screen.getByRole('navigation', { name: /account/i });
+    expect(
+      within(accountNav).getByRole('link', { name: /sign in/i }),
+    ).toHaveAttribute('href', '/login');
+    expect(
+      within(screen.getByRole('main')).getByRole('link', { name: /sign in/i }),
+    ).toHaveAttribute('href', '/login');
   });
 });

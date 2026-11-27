@@ -16,6 +16,14 @@ function LandingHeader() {
   return (
     <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
       <Brand />
+      <nav aria-label="Account">
+        <Link
+          to="/login"
+          className="inline-flex min-h-11 items-center rounded-full px-4 text-sm text-ink-soft transition-colors hover:text-ink"
+        >
+          sign in
+        </Link>
+      </nav>
     </header>
   );
 }
