@@ -360,14 +360,14 @@ describe('GroupNotesPage edit cancelling', () => {
   });
 });
 
-describe('GroupNotesPage edit and the group match', () => {
-  it('drops the note from the list when the group leaves the content', async () => {
+describe('GroupNotesPage edit and the current groups', () => {
+  it('keeps the groups of the note when the draft does not repeat them', async () => {
     const user = userEvent.setup();
     mockedUpdateNote.mockResolvedValue({
       id: 'note-1',
       content: 'buy tea',
       createdAt: '2026-10-14T12:00:00.000Z',
-      groups: [{ id: 'group-9', name: 'other' }],
+      groups: [{ id: 'group-1', name: 'home' }],
     });
     renderPage();
     const [first] = await findCards();
@@ -375,14 +375,44 @@ describe('GroupNotesPage edit and the group match', () => {
     await user.click(within(first!).getByRole('button', { name: 'Edit note' }));
     const editor = within(first!).getByRole('textbox', { name: 'Edit note' });
     await user.clear(editor);
-    await user.type(editor, 'buy tea @other{Shift>}{Enter}{/Shift}');
+    await user.type(editor, 'buy tea{Shift>}{Enter}{/Shift}');
 
-    expect(await screen.findByText('1 note')).toBeInTheDocument();
-    expect(screen.queryByText('buy tea')).not.toBeInTheDocument();
+    expect(mockedUpdateNote).toHaveBeenCalledWith('note-1', 'buy tea @home');
     const cards = await findCards();
-    expect(cards).toHaveLength(1);
-    expect(within(cards[0]!).getByText('fix the sink')).toBeInTheDocument();
+    expect(cards).toHaveLength(2);
+    expect(within(cards[0]!).getByText('buy tea')).toBeInTheDocument();
+    expect(within(cards[0]!).getByText('@home')).toBeInTheDocument();
     expect(screen.queryByText('buy coffee')).not.toBeInTheDocument();
+  });
+
+  it('adds a new group while keeping the groups of the note', async () => {
+    const user = userEvent.setup();
+    mockedUpdateNote.mockResolvedValue({
+      id: 'note-2',
+      content: 'fix the leak',
+      createdAt: '2026-10-13T09:30:00.000Z',
+      groups: [
+        { id: 'group-1', name: 'home' },
+        { id: 'group-2', name: 'errands' },
+        { id: 'group-3', name: 'plumbing' },
+      ],
+    });
+    renderPage();
+    const [, second] = await findCards();
+
+    await user.click(
+      within(second!).getByRole('button', { name: 'Edit note' }),
+    );
+    const editor = within(second!).getByRole('textbox', { name: 'Edit note' });
+    await user.clear(editor);
+    await user.type(editor, 'fix the leak @plumbing{Shift>}{Enter}{/Shift}');
+
+    expect(mockedUpdateNote).toHaveBeenCalledWith(
+      'note-2',
+      'fix the leak @plumbing @home @errands',
+    );
+    expect(await findCards()).toHaveLength(2);
+    expect(screen.getByText('2 notes')).toBeInTheDocument();
   });
 });
 
