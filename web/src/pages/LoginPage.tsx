@@ -28,7 +28,7 @@ export function LoginPage() {
             New here?{' '}
             <Link
               to="/signup"
-              className="text-mark underline-offset-4 hover:underline"
+              className="text-mark-strong underline-offset-4 hover:underline"
             >
               create an account
             </Link>

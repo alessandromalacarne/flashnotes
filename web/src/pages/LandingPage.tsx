@@ -46,7 +46,7 @@ function LocalComposer() {
         Saved on this device. Server sync is not available yet.{' '}
         <Link
           to="/app/groups"
-          className="text-mark underline-offset-4 hover:underline"
+          className="text-mark-strong underline-offset-4 hover:underline"
         >
           browse your groups
         </Link>
@@ -58,7 +58,7 @@ function LocalComposer() {
 function Hero({ demoEntry }: { demoEntry?: ReactNode }) {
   return (
     <section>
-      <p className="text-xs font-medium tracking-[0.2em] text-mark uppercase">
+      <p className="text-xs font-medium tracking-[0.2em] text-mark-strong uppercase">
         notes · groups · zero friction
       </p>
       <h1 className="mt-5 text-4xl leading-[1.05] font-semibold tracking-tight text-ink sm:text-6xl">
@@ -69,8 +69,8 @@ function Hero({ demoEntry }: { demoEntry?: ReactNode }) {
       </h1>
       <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
         flashnotes is a tiny inbox for your brain. Type a thought, end it with a{' '}
-        <code className="text-mark">@group</code>, hit Shift+Enter. Find it
-        later without sorting a single folder.
+        <code className="text-mark-strong">@group</code>, hit Shift+Enter. Find
+        it later without sorting a single folder.
       </p>
 
       <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -92,7 +92,7 @@ function Hero({ demoEntry }: { demoEntry?: ReactNode }) {
 
 function FeatureCard({ title, children }: { title: string; children: string }) {
   return (
-    <li className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+    <li className="rounded-xl border border-line bg-surface p-5 shadow-card sm:p-6">
       <h3 className="font-medium text-ink">{title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">{children}</p>
     </li>
@@ -138,7 +138,7 @@ export function LandingPage() {
     <div className="relative flex min-h-dvh flex-col">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[42rem] bg-[radial-gradient(ellipse_at_top,oklch(0.8_0.14_75/0.1),transparent_65%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[42rem] bg-[radial-gradient(ellipse_at_top,oklch(0.83_0.16_92/0.16),transparent_65%)]"
       />
 
       <LandingHeader />

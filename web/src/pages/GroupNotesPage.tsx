@@ -96,7 +96,7 @@ export function GroupNotesPage() {
         : `${notes.length} notes`;
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-2xl border border-line bg-surface p-5 sm:p-8">
+    <section className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-xl border border-line bg-surface p-5 shadow-card sm:p-8">
       <header className="flex shrink-0 items-baseline gap-3">
         <h1 className="text-sm font-medium tracking-widest text-ink-faint uppercase">
           @{group}
@@ -123,7 +123,7 @@ export function GroupNotesPage() {
           No notes with @{group} yet.{' '}
           <Link
             to="/app"
-            className="text-mark underline-offset-4 hover:underline"
+            className="text-mark-strong underline-offset-4 hover:underline"
           >
             write a note
           </Link>{' '}

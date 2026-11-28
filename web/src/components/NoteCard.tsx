@@ -171,7 +171,7 @@ function EditForm({
             onSave();
           }
         }}
-        className="w-full resize-y rounded-xl border border-line bg-paper p-3 leading-relaxed text-ink focus:border-mark focus:outline-none disabled:opacity-60"
+        className="w-full resize-y rounded-xl border border-line bg-paper p-3 leading-relaxed text-ink focus:border-mark-strong focus:outline-none disabled:opacity-60"
       />
 
       <div className="mt-3 flex items-center gap-2">
@@ -227,7 +227,7 @@ function NoteActions({
           aria-label="Confirm delete"
           onBlur={() => onConfirming(false)}
           onClick={onDelete}
-          className="inline-flex min-h-10 items-center rounded-full bg-paper px-3 text-xs font-medium text-danger transition-[filter] hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-10 items-center rounded-full bg-danger-tint px-3 text-xs font-medium text-danger transition-[filter] hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
           confirm?
         </button>
@@ -249,7 +249,7 @@ export function NoteCard({ note, onUpdate, onDelete }: NoteCardProps) {
   const editor = useNoteEditor({ note, onUpdate, onDelete });
 
   return (
-    <li className="group rounded-2xl border border-line bg-surface-raised p-5">
+    <li className="group rounded-xl border border-line bg-surface-raised p-5 shadow-card">
       {editor.editing ? (
         <EditForm
           draft={editor.draft}
@@ -274,7 +274,7 @@ export function NoteCard({ note, onUpdate, onDelete }: NoteCardProps) {
         {note.groups.map((group) => (
           <span
             key={group.id}
-            className="rounded-full bg-paper px-2.5 py-1 text-xs text-ink-soft"
+            className="rounded-full bg-mark-tint px-2.5 py-1 text-xs font-medium text-mark-strong"
           >
             @{group.name}
           </span>

@@ -1,27 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&display=swap');
 @import 'tailwindcss';
 
 @theme {
-  --color-paper: oklch(0.155 0.008 75);
-  --color-surface: oklch(0.198 0.01 78);
-  --color-ink: oklch(0.94 0.006 85);
-  --color-ink-soft: oklch(0.78 0.01 80);
-  --color-ink-faint: oklch(0.55 0.012 80);
-  --color-line: oklch(0.3 0.012 78);
-  --color-mark: oklch(0.8 0.14 75);
-  --color-mark-contrast: oklch(0.2 0.02 78);
-  --color-danger: oklch(0.72 0.17 25);
-  --color-surface-raised: oklch(0.235 0.011 78);
-  --color-note: oklch(0.56 0.21 288);
-  --color-note-soft: oklch(0.6 0.16 254);
-  --color-note-edge: oklch(0.75 0.09 275);
+  --color-paper: oklch(0.982 0.004 85);
+  --color-surface: oklch(1 0 0);
+  --color-surface-raised: oklch(0.982 0.004 85);
+  --color-ink: oklch(0.23 0.012 80);
+  --color-ink-soft: oklch(0.45 0.01 80);
+  --color-ink-faint: oklch(0.52 0.01 80);
+  --color-line: oklch(0.9 0.006 85);
+  --color-mark: oklch(0.83 0.16 92);
+  --color-mark-strong: oklch(0.52 0.1 88);
+  --color-mark-contrast: oklch(0.23 0.012 80);
+  --color-mark-tint: oklch(0.965 0.045 95);
+  --color-focus: oklch(0.63 0.12 90);
+  --color-danger: oklch(0.52 0.17 27);
+  --color-danger-tint: oklch(0.52 0.17 27 / 0.08);
+  --color-note: oklch(0.83 0.16 92);
+  --color-note-soft: oklch(0.965 0.045 95);
+  --color-note-edge: oklch(0.75 0.11 90);
+
+  --shadow-card: 0 1px 2px oklch(0.2 0.01 80 / 0.05);
+  --shadow-sheet:
+    0 1px 2px oklch(0.2 0.01 80 / 0.05), 0 10px 28px oklch(0.2 0.01 80 / 0.07);
+  --shadow-focus: 0 10px 28px oklch(0.2 0.01 80 / 0.08);
 
   --font-sans:
-    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, 'Helvetica Neue', sans-serif;
 }
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
@@ -33,9 +44,9 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-mark);
+    outline: 2px solid var(--color-mark-strong);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 4px;
   }
 
   @media (prefers-reduced-motion: reduce) {
