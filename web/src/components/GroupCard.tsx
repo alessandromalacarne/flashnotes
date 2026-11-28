@@ -31,7 +31,7 @@ export function GroupCard({ group, onDelete }: GroupCardProps) {
   return (
     <li
       aria-label={`@${group.name} (${notes})`}
-      className="group flex w-40 flex-col items-center justify-self-center gap-3 rounded-2xl border border-transparent p-4 transition-colors hover:bg-surface-raised focus-within:bg-surface-raised"
+      className="group flex w-40 flex-col items-center justify-self-center gap-3 rounded-xl border border-transparent p-4 transition-colors hover:bg-surface-raised focus-within:bg-surface-raised"
     >
       <Link
         to={`/app/group/${encodeURIComponent(group.name)}`}
@@ -48,7 +48,7 @@ export function GroupCard({ group, onDelete }: GroupCardProps) {
         >
           <span className="absolute top-0 left-0 block h-12 w-20 -rotate-10 rounded-lg border border-note-edge/60 bg-note-soft" />
           <span className="absolute top-2 left-3 block h-12 w-20 -rotate-2 rounded-lg border border-note-edge/60 bg-note-soft" />
-          <span className="absolute top-4 left-6 block h-12 w-20 rotate-8 rounded-lg border border-note-edge bg-note shadow-[0_4px_10px_oklch(0_0_0/0.4)]" />
+          <span className="absolute top-4 left-6 block h-12 w-20 rotate-8 rounded-lg border border-note-edge bg-note shadow-card" />
         </span>
       </Link>
 

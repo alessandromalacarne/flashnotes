@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 
 const inputClass =
-  'mt-2 min-h-11 w-full rounded-xl border border-line bg-paper px-3 text-ink placeholder:text-ink-faint focus:border-mark focus:outline-none disabled:opacity-60';
+  'mt-2 min-h-11 w-full rounded-xl border border-line bg-paper px-3 text-ink placeholder:text-ink-faint focus:border-mark-strong focus:outline-none disabled:opacity-60';
 
 interface AuthFormProps {
   submitLabel: string;

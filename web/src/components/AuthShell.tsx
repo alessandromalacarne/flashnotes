@@ -23,7 +23,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
             {subtitle}
           </p>
 
-          <div className="mt-8 rounded-2xl border border-line bg-surface p-6 shadow-[0_24px_80px_oklch(0_0_0/0.35)]">
+          <div className="mt-8 rounded-xl border border-line bg-surface p-6 shadow-sheet">
             {children}
           </div>
         </section>

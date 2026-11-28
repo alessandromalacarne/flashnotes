@@ -106,7 +106,7 @@ export function Composer({ onSubmit }: ComposerProps) {
           textareaRef.current?.focus();
         }
       }}
-      className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-[inset_0_1px_0_oklch(1_0_0/0.04)]"
+      className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-card focus-within:shadow-focus focus-within:ring-2 focus-within:ring-focus"
     >
       <textarea
         ref={textareaRef}
