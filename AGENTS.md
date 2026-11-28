@@ -16,20 +16,23 @@ flashnotes captures short notes and groups them by `@group`. A note is valid onl
 
 ## Repository layout
 
-| Path                       | What it is                                                     |
-| -------------------------- | -------------------------------------------------------------- |
-| `api/`                     | NestJS 12 + Prisma 7 + PostgreSQL, ESM TypeScript              |
-| `web/`                     | React 19 + Vite 8 + Tailwind 4 SPA, TypeScript                 |
-| `core/`                    | `@flashnotes/core`: domain rules shared by `api` and `web`     |
-| `api/prisma/`              | Schema and migrations                                          |
-| `api/test/`                | e2e suites (supertest + real Postgres)                         |
-| `scripts/pg.sh`            | Local Postgres (`start`, `stop`, `status`, `reset`)            |
-| `compose.yaml`             | Postgres via Docker (alternative to `pg.sh`)                   |
-| `flake.nix`                | devShell: Node 24, Postgres 17, Prisma engines                 |
-| `.mido.toml`               | Guardrails ladder configuration                                |
-| `.github/workflows/ci.yml` | CI: mido guardrails ladder and `npm audit` for each package     |
+| Path                            | What it is                                                  |
+| ------------------------------- | ----------------------------------------------------------- |
+| `api/`                          | NestJS 12 + Prisma 7 + PostgreSQL, ESM TypeScript           |
+| `web/`                          | React 19 + Vite 8 + Tailwind 4 SPA, TypeScript              |
+| `core/`                         | `@flashnotes/core`: domain rules shared by `api` and `web`  |
+| `api/prisma/`                   | Schema and migrations                                       |
+| `api/test/`                     | e2e suites (supertest + real Postgres)                      |
+| `scripts/pg.sh`                 | Local Postgres (`start`, `stop`, `status`, `reset`)         |
+| `compose.yaml`                  | Postgres via Docker (alternative to `pg.sh`)                |
+| `flake.nix`                     | devShell: Node 24, Postgres 17, Prisma engines              |
+| `.mido.toml`                    | Guardrails ladder configuration                             |
+| `.github/workflows/ci.yml`      | CI: mido guardrails ladder and `npm audit` for each package |
+| `package.json`                  | Root version only (release-please; no workspace)            |
+| `release-please-config.json`    | Release PR configuration and changelog sections             |
+| `.release-please-manifest.json` | Last released version, read by release-please               |
 
-There is no root `package.json` or workspace. Each package owns its own lockfile and install step.
+There is no root workspace. The root `package.json` holds the release version only; each package owns its own lockfile and install step.
 
 ## Setup and commands
 
@@ -117,7 +120,8 @@ Feature modules under `api/src/<feature>/`, each with `*.module.ts`, `*.controll
 
 ## Conventions
 
-- Conventional commits with a scope: `feat(api):`, `feat(web):`, `feat(core):`, `test(api):`, `docs:`, `chore:`. Work on a feature branch and open a PR; CI runs on pushes to `main` and on PRs.
+- Conventional commits with a scope: `feat(api):`, `feat(web):`, `feat(core):`, `test(api):`, `docs:`, `chore:`. Work on a feature branch and open a PR; CI runs on pushes to `master` and on PRs.
+- Releases are automated by release-please on `master`: it opens a release PR from the conventional commits, and merging it writes `CHANGELOG.md`, tags `vX.Y.Z` and publishes the GitHub release. `CHANGELOG.md` and the version in the root `package.json`, `api/package.json`, `core/package.json` and `web/package.json` are generated — edit them only through the release PR.
 - TypeScript strict mode; avoid `any` and non-null assertions where a narrow type works — strict mode catches null/undefined errors at compile time.
 - Comments only where the reasoning is non-obvious (see `notes.service.ts`, `core/src/group-parser.ts`) — code should be self-documenting.
 - `WALKTHROUGH.md` is gitignored and intentionally untracked; it is a local living document, not part of the diff.
