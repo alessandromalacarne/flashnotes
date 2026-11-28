@@ -69,6 +69,10 @@ npm run dev                  # app at http://localhost:5173
 
 Vite proxies `/api` to `127.0.0.1:3000`.
 
+## Deployment
+
+See [DEPLOY.md](DEPLOY.md) for the production runbook: build order, nginx, systemd, migrations, backups and rollback.
+
 ## Routes
 
 | Route               | Description                                              |
